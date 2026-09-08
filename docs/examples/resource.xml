@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<job>
+  <jobId>1001</jobId>
+  <title>Data Entry Clerk</title>
+  <employerId>501</employerId>
+  <accommodationType>Flexible schedule</accommodationType>
+  <location>Manila</location>
+  <active>true</active>
+</job>
