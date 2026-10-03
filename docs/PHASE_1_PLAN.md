@@ -1,6 +1,6 @@
 # Phase 1 Plan: Foundation
 
-> Status: **Approved (2026-10-03). In progress.**
+> Status: **Built (2026-10-03).** All six demo steps verified in the browser; 43 backend and 28 frontend tests pass.
 > The seeded admin and demo accounts are a **backup** for demos (e.g., if registration fails on the day). Registration itself must still work and is covered by tests and demo steps 1–2.
 > Part of: [CONCEPT_PLAN.md](CONCEPT_PLAN.md), build phase 1 of 7
 
@@ -120,7 +120,7 @@ The server enforces the same rule. Someone who skips the React page and sends a 
 
 **Starting data**, loaded with one command (`php artisan db:seed`):
 - **10 job categories:** Information Technology, Customer Service & BPO, Administrative & Clerical, Accounting & Finance, Sales & Marketing, Education & Training, Healthcare, Hospitality & Food Service, Manufacturing & Production, Creative & Design.
-- **20 accommodation types in 5 groups**, taken from the proposal (Physical access, Communication, Work arrangement, Assistive technology, Support).
+- **18 accommodation types in 5 groups**, taken from the proposal (Physical access, Communication, Work arrangement, Assistive technology, Support).
 - **1 admin account**, plus **1 demo job seeker and 1 demo employer** (see §3.1 for when each is created).
 
 ### 4.2 How login works
@@ -294,5 +294,5 @@ For whoever writes the code. Everything above, in developer terms.
 - `api/auth.js`; `api/client.js` updated to handle 401 (go to login), 419 (refresh security cookie, retry once) and 422 (field errors)
 - `auth/AuthContext.jsx`, `auth/ProtectedRoute.jsx`, `auth/GuestRoute.jsx`, `auth/redirects.js` (`safeNext()` only allows internal paths, which prevents redirects to outside sites)
 - Layouts: `PublicLayout`, `PortalLayout` + `portalMenus.js`
-- Components: `FormField`, `PasswordField` (show/hide + live rule checklist), `ErrorSummary`, `Button`, `ConfirmDialog` (Radix Dialog), `StatusBadge`, `PageHeading`, `LiveRegion` + `useAnnounce`
+- Components: `FormField`, `CheckboxField`, `PasswordField` (show/hide + live rule checklist), `ErrorSummary`, `Button`, `Modal` + `ConfirmDialog` (Radix Dialog; focus starts on Cancel and returns to the opener), `StatusBadge`, `Notice`, `DashboardTile`, `PageHeading`, `AnnouncerProvider` + `useAnnounce`
 - New packages: `@radix-ui/react-dialog`; for tests `vitest`, `jsdom`, `@testing-library/react`, `@testing-library/user-event`, `@testing-library/jest-dom`, `vitest-axe`

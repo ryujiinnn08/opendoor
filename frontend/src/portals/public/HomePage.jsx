@@ -1,40 +1,87 @@
-import { useEffect, useState } from 'react'
-import { API_URL } from '../../api/client.js'
-import { getHealth } from '../../api/health.js'
+import { Link, useLocation } from 'react-router-dom'
+import { useAuth } from '../../auth/authContext.js'
+import { dashboardFor } from '../../auth/redirects.js'
+import Notice from '../../components/ui/Notice.jsx'
+import PageHeading from '../../components/ui/PageHeading.jsx'
+
+const primaryLink =
+  'inline-flex min-h-11 items-center rounded-md bg-primary px-5 py-2 font-bold text-on-primary hover:bg-primary-hover'
+const secondaryLink =
+  'inline-flex min-h-11 items-center rounded-md border-2 border-primary bg-surface px-5 py-2 font-bold text-primary hover:bg-bg'
+
+const STEPS = [
+  {
+    title: 'Tell us what you need, once',
+    text: 'Choose the workplace accommodations you need, such as a wheelchair-accessible entrance, a sign language interpreter or remote work.',
+  },
+  {
+    title: 'See jobs that meet your needs',
+    text: 'Job postings list the accommodations they provide, so you can see how many of your needs each job meets before you apply.',
+  },
+  {
+    title: 'Know which employers keep their word',
+    text: 'People who were hired confirm whether each promised accommodation was delivered. Their answers stay anonymous.',
+  },
+]
 
 export default function HomePage() {
-  const [health, setHealth] = useState({ state: 'loading' })
-
-  useEffect(() => {
-    getHealth()
-      .then((data) => setHealth({ state: 'ok', data }))
-      .catch(() => setHealth({ state: 'error' }))
-  }, [])
+  const { status, role } = useAuth()
+  const location = useLocation()
 
   return (
-    <section>
-      <h1 tabIndex={-1} className="text-3xl font-bold sm:text-4xl">
-        Find jobs that meet your accommodation needs
-      </h1>
-      <p className="mt-4 max-w-prose text-lg text-muted">
-        Tell us what you need once. OpenDoor shows which openings provide it, and hired employees confirm whether
-        employers kept their promises.
-      </p>
+    <>
+      {location.state?.loggedOut && (
+        <Notice tone="success" className="mb-8">
+          You have logged out.
+        </Notice>
+      )}
 
-      <div className="mt-8 rounded-lg border border-border bg-surface p-4" role="status" aria-live="polite">
-        <h2 className="font-bold">System status</h2>
-        {health.state === 'loading' && <p>Checking the API…</p>}
-        {health.state === 'ok' && (
-          <p>
-            <span aria-hidden="true">✓ </span>API reachable. Database: {health.data.database}.
+      <section>
+        <PageHeading>Find jobs that meet your accommodation needs</PageHeading>
+        <p className="mt-4 max-w-prose text-lg">
+          OpenDoor is a job platform for persons with disabilities in the Philippines. Tell us what you need once, and
+          see which openings provide it.
+        </p>
+        <div className="mt-6 flex flex-wrap gap-3">
+          {status === 'authenticated' ? (
+            <Link to={dashboardFor(role)} className={primaryLink}>
+              Go to my dashboard
+            </Link>
+          ) : (
+            <>
+              <Link to="/register?type=candidate" className={primaryLink}>
+                Register as a job seeker
+              </Link>
+              <Link to="/register?type=employer" className={secondaryLink}>
+                Register as an employer
+              </Link>
+            </>
+          )}
+        </div>
+        {status !== 'authenticated' && (
+          <p className="mt-4">
+            Already have an account?{' '}
+            <Link to="/login" className="font-bold text-primary underline underline-offset-4 hover:no-underline">
+              Log in
+            </Link>
           </p>
         )}
-        {health.state === 'error' && (
-          <p className="text-danger">
-            <span aria-hidden="true">✕ </span>API not reachable at {API_URL}.
-          </p>
-        )}
-      </div>
-    </section>
+      </section>
+
+      <section aria-labelledby="how-it-works" className="mt-12">
+        <h2 id="how-it-works" className="text-2xl font-bold">
+          How OpenDoor works
+        </h2>
+        <ol className="mt-4 grid gap-4 md:grid-cols-3">
+          {STEPS.map((step, index) => (
+            <li key={step.title} className="rounded-lg border border-border bg-surface p-5">
+              <p className="font-bold text-accent">Step {index + 1}</p>
+              <h3 className="mt-1 text-xl font-bold">{step.title}</h3>
+              <p className="mt-2">{step.text}</p>
+            </li>
+          ))}
+        </ol>
+      </section>
+    </>
   )
 }

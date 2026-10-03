@@ -2,7 +2,7 @@
 
 A web-based job matching platform with accommodation-based filtering and post-hire accommodation verification for persons with disabilities.
 
-See [docs/CONCEPT_PLAN.md](docs/CONCEPT_PLAN.md) for the concept, architecture and build plan.
+See [docs/CONCEPT_PLAN.md](docs/CONCEPT_PLAN.md) for the concept, architecture and build plan, and [docs/PHASE_1_PLAN.md](docs/PHASE_1_PLAN.md) for the current phase.
 
 ## Structure
 
@@ -32,9 +32,11 @@ cd backend
 composer install
 cp .env.example .env     # Windows: copy .env.example .env
 php artisan key:generate
-php artisan migrate
+php artisan migrate --seed
 php artisan serve --host=localhost --port=8000
 ```
+
+`--seed` loads the job categories, the accommodation types and the starting accounts. It is safe to run `php artisan db:seed` again later; nothing is duplicated and no password is reset.
 
 Frontend (http://localhost:5173):
 
@@ -44,9 +46,33 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:5173. The home page shows whether the API and database are reachable (`GET /api/health`).
+Open http://localhost:5173. Both apps must run on `localhost` (not `127.0.0.1`) so the Sanctum session cookie is shared between them.
 
-Both apps must run on `localhost` (not `127.0.0.1`) so the Sanctum session cookie is shared between them.
+## Demo logins (local only)
+
+When the `SEED_*` settings in `backend/.env` are left blank, the seeder creates these accounts:
+
+| Role | Email | Password |
+|---|---|---|
+| Administrator | `admin@opendoor.test` | `OpenDoor@2026` |
+| Job seeker | `candidate@opendoor.test` | `OpenDoor@2026` |
+| Employer | `employer@opendoor.test` | `OpenDoor@2026` |
+
+These defaults exist only outside production. On the live site the admin email and password must be set in the server's environment, and demo accounts are created only when `SEED_DEMO_PASSWORD` is set (see [docs/PHASE_1_PLAN.md §3.1](docs/PHASE_1_PLAN.md)).
+
+## Tests
+
+```bash
+cd backend
+php artisan test
+```
+
+```bash
+cd frontend
+npm run test
+```
+
+Backend tests use a temporary in-memory SQLite database, so they never touch your `opendoor` data. **Windows (XAMPP):** if they fail with a SQLite driver error, open `C:\xampp\php\php.ini`, find `;extension=pdo_sqlite` and remove the `;` at the start.
 
 ## Deployment
 
