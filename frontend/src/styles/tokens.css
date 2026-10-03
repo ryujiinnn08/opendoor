@@ -1,0 +1,39 @@
+/*
+ * Design tokens. Every text/background pair meets WCAG 2.1 AA (4.5:1).
+ * Themes are switched with attributes on <html> (M13 display settings):
+ *   data-theme="high-contrast"   data-text="large"
+ */
+:root {
+  --od-bg: #fbfaf7;
+  --od-surface: #ffffff;
+  --od-text: #1a1f24;
+  --od-text-muted: #4a5560;
+  --od-border: #c9cfd4;
+  --od-primary: #0b5d5b;
+  --od-primary-hover: #084745;
+  --od-on-primary: #ffffff;
+  --od-accent: #a54a06;
+  --od-focus: #1d4ed8;
+  --od-success: #1e6b33;
+  --od-danger: #b42318;
+  --od-font-size: 1.0625rem; /* 17px base */
+}
+
+:root[data-theme='high-contrast'] {
+  --od-bg: #000000;
+  --od-surface: #000000;
+  --od-text: #ffffff;
+  --od-text-muted: #ffffff;
+  --od-border: #ffffff;
+  --od-primary: #ffff00;
+  --od-primary-hover: #ffffff;
+  --od-on-primary: #000000;
+  --od-accent: #ffff00;
+  --od-focus: #ffff00;
+  --od-success: #7dff8a;
+  --od-danger: #ff8a8a;
+}
+
+:root[data-text='large'] {
+  --od-font-size: 1.3125rem; /* 21px base */
+}

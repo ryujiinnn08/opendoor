@@ -1,0 +1,48 @@
+@import 'tailwindcss';
+@import './styles/tokens.css';
+
+@theme inline {
+  --font-sans: 'Atkinson Hyperlegible', ui-sans-serif, system-ui, sans-serif;
+  --color-bg: var(--od-bg);
+  --color-surface: var(--od-surface);
+  --color-text: var(--od-text);
+  --color-muted: var(--od-text-muted);
+  --color-border: var(--od-border);
+  --color-primary: var(--od-primary);
+  --color-primary-hover: var(--od-primary-hover);
+  --color-on-primary: var(--od-on-primary);
+  --color-accent: var(--od-accent);
+  --color-success: var(--od-success);
+  --color-danger: var(--od-danger);
+}
+
+@layer base {
+  html {
+    font-size: var(--od-font-size);
+  }
+
+  body {
+    @apply bg-bg text-text font-sans leading-relaxed antialiased;
+  }
+
+  /* Thick, high-visibility focus ring on everything focusable (WCAG 2.4.7). */
+  :focus-visible {
+    outline: 3px solid var(--od-focus);
+    outline-offset: 3px;
+  }
+
+  /* Headings receive focus on route change; no ring needed for that. */
+  h1:focus {
+    outline: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
