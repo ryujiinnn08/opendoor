@@ -6,6 +6,7 @@ namespace App\Models;
 use App\Enums\Role;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -65,5 +66,23 @@ class User extends Authenticatable
     public function hasRole(Role ...$roles): bool
     {
         return in_array($this->role, $roles, true);
+    }
+
+    /**
+     * Whether this user is the owner of the given employer (company or individual profile).
+     */
+    public function ownsEmployer(int $employerId): bool
+    {
+        $membership = $this->membership;
+
+        return $membership !== null && $membership->isOwner() && $membership->employer_id === $employerId;
+    }
+
+    /**
+     * The employer this user belongs to (as owner or HR officer), if any.
+     */
+    public function membership(): HasOne
+    {
+        return $this->hasOne(EmployerMember::class);
     }
 }

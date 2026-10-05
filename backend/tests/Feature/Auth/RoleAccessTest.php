@@ -4,6 +4,7 @@ namespace Tests\Feature\Auth;
 
 use App\Models\Accommodation;
 use App\Models\Category;
+use App\Models\Employer;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -20,8 +21,14 @@ class RoleAccessTest extends TestCase
     {
         $category = Category::factory()->create();
         $accommodation = Accommodation::factory()->create();
+        $employer = Employer::factory()->pendingVerification()->create();
 
         return [
+            ['GET', '/api/admin/dashboard'],
+            ['GET', '/api/admin/employers'],
+            ['PATCH', "/api/admin/employers/{$employer->id}/verify"],
+            ['GET', '/api/admin/settings'],
+            ['PUT', '/api/admin/settings'],
             ['GET', '/api/admin/accommodations'],
             ['POST', '/api/admin/accommodations'],
             ['PUT', "/api/admin/accommodations/{$accommodation->id}"],
@@ -61,5 +68,14 @@ class RoleAccessTest extends TestCase
         $this->actingAs(User::factory()->admin()->create(), 'web')
             ->getJson('/api/admin/accommodations')
             ->assertOk();
+    }
+
+    public function test_job_seekers_and_admins_are_refused_on_employer_endpoints(): void
+    {
+        foreach ([User::factory()->create(), User::factory()->admin()->create()] as $user) {
+            foreach ([['GET', '/api/employer/profile'], ['POST', '/api/employer/setup'], ['GET', '/api/employer/departments']] as [$method, $uri]) {
+                $this->actingAs($user, 'web')->json($method, $uri)->assertForbidden();
+            }
+        }
     }
 }

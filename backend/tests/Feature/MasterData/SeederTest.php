@@ -24,7 +24,7 @@ class SeederTest extends TestCase
 
         $this->assertSame(10, Category::count());
         $this->assertSame(18, Accommodation::count());
-        $this->assertSame(3, User::count());
+        $this->assertSame(5, User::count());
     }
 
     public function test_local_defaults_create_admin_and_demo_accounts(): void
@@ -33,7 +33,8 @@ class SeederTest extends TestCase
 
         $admin = User::firstWhere('email', UserSeeder::LOCAL_ADMIN_EMAIL);
         $this->assertSame(Role::Admin, $admin->role);
-        $this->assertTrue(Hash::check(UserSeeder::LOCAL_PASSWORD, $admin->password));
+        $this->assertTrue(Hash::check(UserSeeder::LOCAL_ADMIN_PASSWORD, $admin->password));
+        $this->assertTrue(Hash::check(UserSeeder::LOCAL_DEMO_PASSWORD, User::firstWhere('email', UserSeeder::DEMO_CANDIDATE_EMAIL)->password));
         $this->assertSame(Role::Candidate, User::firstWhere('email', UserSeeder::DEMO_CANDIDATE_EMAIL)->role);
         $this->assertSame(Role::Employer, User::firstWhere('email', UserSeeder::DEMO_EMPLOYER_EMAIL)->role);
     }
@@ -77,7 +78,7 @@ class SeederTest extends TestCase
         config(['opendoor.seed.demo_password' => 'Strong@Demo1']);
         $this->runUserSeeder();
 
-        $this->assertSame(3, User::count());
+        $this->assertSame(5, User::count());
     }
 
     /**

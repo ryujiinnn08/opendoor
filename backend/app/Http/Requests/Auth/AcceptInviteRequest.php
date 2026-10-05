@@ -2,12 +2,14 @@
 
 namespace App\Http\Requests\Auth;
 
-use App\Enums\Role;
 use App\Http\Requests\Concerns\AccountFields;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
-class RegisterRequest extends FormRequest
+/**
+ * Joining a department by invite. Guests create an account; a logged-in employer without
+ * an employer profile joins with their existing account and sends no fields.
+ */
+class AcceptInviteRequest extends FormRequest
 {
     use AccountFields;
 
@@ -21,10 +23,7 @@ class RegisterRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'role' => ['required', Rule::in(Role::selfRegistrable())],
-            ...$this->accountRules(),
-        ];
+        return $this->user() ? [] : $this->accountRules();
     }
 
     /**
@@ -32,11 +31,7 @@ class RegisterRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
-            'role.required' => 'Choose whether you are looking for a job or hiring.',
-            'role.in' => 'Choose whether you are looking for a job or hiring.',
-            ...$this->accountMessages(),
-        ];
+        return $this->accountMessages();
     }
 
     protected function prepareForValidation(): void
