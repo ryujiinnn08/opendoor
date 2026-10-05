@@ -1,6 +1,6 @@
 # Phase 2 Plan: Employer Side
 
-> Status: **DRAFT (rev. 2) — awaiting approval of the new decisions in §3.2**
+> Status: **Phase 2A built (2026-10-05)**: demo steps A1–A8 verified in the browser; 91 backend and 51 frontend tests pass. **Phase 2B next** (after your check-in).
 > Part of: [CONCEPT_PLAN.md](CONCEPT_PLAN.md), build phase 2 of 7
 > Builds on: [PHASE_1_PLAN.md](PHASE_1_PLAN.md) (accounts, roles, categories, accommodation types)
 > Rev. 2 (2026-10-05): companies now have **departments** and **several HR accounts** joined by invite link; **individual employers** are allowed. Phase 2 is split into **2A** (employers and teams) and **2B** (job postings and approvals).
@@ -101,7 +101,7 @@ The **employees** are the job seekers who get hired through postings (Phase 4). 
 | 11 | Closing date between tomorrow and 6 months ahead; postings past it show as Closed automatically |
 | 12 | Demo data, with local default passwords **`Admin_1234`** (admin) and **`Demo_1234`** (all demo accounts) |
 
-### 3.2 New decisions from the team design (need your yes or no)
+### 3.2 Team design decisions (approved 2026-10-05)
 
 | # | Question | My recommendation | Why |
 |---|---|---|---|
@@ -378,3 +378,17 @@ npm run test
 - Components: `VerifiedBadge`, `FileUpload`, `CopyLinkBox`, `ReasonDialog`, `PlacesCounter` (2A); `AccommodationPicker`, `PostingStatusBadge`, `FilterTabs`, `JobDetails` (2B)
 - Auth: `/api/me` also returns the employer membership (type, role, department), so menus and route guards can tell owner, HR officer and individual apart
 - Logo: `public/opendoor-logo.svg` placeholder, shown in `PublicLayout` and `PortalLayout`
+
+---
+
+## Phase 2A build notes (2026-10-05)
+
+Found and fixed while testing in the browser:
+- **XAMPP's MariaDB overwrote invite expiry dates.** MariaDB 10.4 adds "ON UPDATE CURRENT_TIMESTAMP" to the first required `timestamp` column, so accepting an invite reset its expiry. Fixed with a migration that makes `expires_at` a `dateTime`; the README now has the rule for future migrations.
+- **Logging in from a `?next=` link went to the dashboard** instead of the requested page. The login route guard now honors `next` itself (with the same "internal paths only" check).
+- **The admin's Verify dialog stayed open** after a successful decision; it now closes and focus moves to the list heading.
+- **Radio cards read their title and description as one run-on name** for screen readers; the title is now the name and the description is attached as a hint (also improves the Register page).
+- **Focus was lost after moving an HR officer** to another department; it now lands on that department's heading.
+- **Filter tabs and the menu both said "current page"**; filters now say "current item".
+- XAMPP's PHP image library can't create WebP files, so the logo test uses PNG/JPG fixtures (real WebP uploads are still accepted).
+

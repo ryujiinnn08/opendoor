@@ -17,10 +17,17 @@ export function getCsrfCookie() {
 }
 
 let onUnauthorized = () => {}
+let onProfileRequired = () => {}
 
-// AuthContext registers a handler that clears the user when the session ends.
+// AuthProvider registers a handler that clears the user when the session ends.
 export function setUnauthorizedHandler(handler) {
   onUnauthorized = handler
+}
+
+// ...and one that reloads the user when the API says the employer profile is missing
+// (e.g., the company owner removed this HR officer), so the app shows the setup screen.
+export function setProfileRequiredHandler(handler) {
+  onProfileRequired = handler
 }
 
 client.interceptors.response.use(
@@ -37,6 +44,10 @@ client.interceptors.response.use(
 
     if (response?.status === 401) {
       onUnauthorized()
+    }
+
+    if (response?.status === 409 && response.data?.code === 'employer_profile_required') {
+      onProfileRequired()
     }
 
     return Promise.reject(error)

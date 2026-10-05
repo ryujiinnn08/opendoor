@@ -20,7 +20,7 @@ describe('PortalLayout', () => {
   it('shows the menu for the role', () => {
     renderRoutes(routes, {
       path: '/admin/dashboard',
-      auth: { status: 'authenticated', role: 'admin', user: { name: 'OpenDoor Admin' } },
+      auth: { status: 'authenticated', role: 'admin', user: { name: 'OpenDoor Admin', role: 'admin' } },
     })
 
     const nav = screen.getByRole('navigation', { name: 'Admin portal' })
@@ -34,7 +34,7 @@ describe('PortalLayout', () => {
     const announce = vi.fn()
     const { router } = renderRoutes(routes, {
       path: '/admin/dashboard',
-      auth: { status: 'authenticated', role: 'admin', user: { name: 'OpenDoor Admin' }, logout },
+      auth: { status: 'authenticated', role: 'admin', user: { name: 'OpenDoor Admin', role: 'admin' }, logout },
       announce,
     })
 

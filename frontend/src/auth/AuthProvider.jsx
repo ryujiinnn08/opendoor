@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import * as authApi from '../api/auth.js'
-import { setUnauthorizedHandler } from '../api/client.js'
+import { setProfileRequiredHandler, setUnauthorizedHandler } from '../api/client.js'
 import { AuthContext } from './authContext.js'
 
 export default function AuthProvider({ children }) {
@@ -12,14 +12,24 @@ export default function AuthProvider({ children }) {
     setStatus(nextUser ? 'authenticated' : 'guest')
   }, [])
 
+  /** Reloads the user, e.g., after an employer sets up or renames their company. */
+  const refresh = useCallback(async () => {
+    try {
+      applyUser(await authApi.fetchCurrentUser())
+    } catch {
+      applyUser(null)
+    }
+  }, [applyUser])
+
   // Restore the session on page load: the cookie survives refreshes, the React state does not.
   useEffect(() => {
     setUnauthorizedHandler(() => applyUser(null))
+    setProfileRequiredHandler(() => refresh())
     authApi
       .fetchCurrentUser()
       .then(applyUser)
       .catch(() => applyUser(null))
-  }, [applyUser])
+  }, [applyUser, refresh])
 
   const login = useCallback(
     async (values) => {
@@ -48,8 +58,8 @@ export default function AuthProvider({ children }) {
   }, [applyUser])
 
   const value = useMemo(
-    () => ({ user, role: user?.role ?? null, status, login, register, logout }),
-    [user, status, login, register, logout],
+    () => ({ user, role: user?.role ?? null, status, login, register, logout, refresh }),
+    [user, status, login, register, logout, refresh],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

@@ -88,7 +88,7 @@ Because the users are PWDs, **accessibility is the design language, not a layer 
 
 **Visual direction (proposal, open to change)**
 - Brand idea: an open door, i.e., warm and welcoming, not clinical.
-- Palette: deep teal primary + warm amber accent on off-white; every pair checked for ≥ 4.5:1. A high-contrast theme (black/white/yellow focus) and a "larger text" toggle (M13 display settings).
+- Palette (rev. 2026-10-05): **deep purple primary (#5b21b6)** + warm amber accent on a light lavender-white background; every text pair checked for ≥ 4.5:1 (primary 8.98:1 on white). A high-contrast theme (black/white/yellow focus) and a "larger text" toggle (M13 display settings).
 - Type: one highly legible sans-serif (e.g., Atkinson Hyperlegible, designed for low-vision readers; free on Google Fonts).
 - Thick, high-visibility focus ring on everything focusable; skip-to-content link on every page.
 - Accommodation icons: one simple icon per accommodation *group* (physical, communication, work arrangement, assistive tech, support), always paired with the text label.
@@ -199,6 +199,8 @@ users ─1:1─ candidate_profiles ─M:N─ accommodations (candidate_accommoda
                               └─1:N─ reports (reporter → users)
 notifications (Laravel built-in), saved_jobs (candidate_profile × job_posting)
 ```
+
+Phase 2 refines the employer side: `employers` is the hiring party (company or individual), with `departments`, `employer_members` (owner / HR officer), `department_invites` and `app_settings` (see [PHASE_2_PLAN.md](PHASE_2_PLAN.md) §4.1).
 
 ### 5.6 Hosting on Cloudflare
 

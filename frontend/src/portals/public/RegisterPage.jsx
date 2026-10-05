@@ -8,9 +8,10 @@ import Button from '../../components/ui/Button.jsx'
 import CheckboxField from '../../components/ui/CheckboxField.jsx'
 import ErrorSummary from '../../components/ui/ErrorSummary.jsx'
 import { summaryFrom } from '../../lib/errorSummary.js'
-import FormField, { FieldError } from '../../components/ui/FormField.jsx'
+import FormField from '../../components/ui/FormField.jsx'
 import PageHeading from '../../components/ui/PageHeading.jsx'
 import PasswordField from '../../components/ui/PasswordField.jsx'
+import RadioCardGroup from '../../components/ui/RadioCardGroup.jsx'
 import { checkPassword } from '../../lib/passwordRules.js'
 
 const ROLES = [
@@ -123,36 +124,14 @@ export default function RegisterPage() {
         <ErrorSummary errors={summary} focusKey={focusKey} />
 
         <form onSubmit={handleSubmit} noValidate>
-          <fieldset className="mb-8" aria-describedby={errors.role ? 'role-error' : undefined}>
-            <legend className="text-xl font-bold">What brings you to OpenDoor?</legend>
-            {errors.role && <FieldError id="role-error">{errors.role}</FieldError>}
-            <div className="mt-3 grid gap-3 sm:grid-cols-2">
-              {ROLES.map((role) => {
-                const selected = values.role === role.value
-                return (
-                  <label
-                    key={role.value}
-                    htmlFor={`role-${role.value}`}
-                    className={`flex cursor-pointer gap-3 rounded-lg border-2 bg-surface p-4 ${selected ? 'border-primary ring-2 ring-primary' : 'border-muted'}`}
-                  >
-                    <input
-                      id={`role-${role.value}`}
-                      type="radio"
-                      name="role"
-                      value={role.value}
-                      checked={selected}
-                      onChange={update('role')}
-                      className="mt-1 size-6 shrink-0 accent-primary"
-                    />
-                    <span>
-                      <span className="block font-bold">{role.title}</span>
-                      <span className="block text-muted">{role.text}</span>
-                    </span>
-                  </label>
-                )
-              })}
-            </div>
-          </fieldset>
+          <RadioCardGroup
+            name="role"
+            legend="What brings you to OpenDoor?"
+            options={ROLES}
+            value={values.role}
+            onChange={update('role')}
+            error={errors.role}
+          />
 
           <FormField
             id="name"

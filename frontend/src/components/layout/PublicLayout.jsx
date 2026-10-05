@@ -1,6 +1,7 @@
 import { Link, Outlet } from 'react-router-dom'
 import { useAuth } from '../../auth/authContext.js'
 import { dashboardFor } from '../../auth/redirects.js'
+import BrandLink from './BrandLink.jsx'
 import SiteFooter from './SiteFooter.jsx'
 import SkipLink from './SkipLink.jsx'
 
@@ -14,9 +15,7 @@ export default function PublicLayout() {
       <SkipLink />
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-3">
-          <Link to="/" className="text-2xl font-bold text-primary">
-            OpenDoor
-          </Link>
+          <BrandLink />
           <nav aria-label="Account">
             <ul className="flex flex-wrap gap-2">
               {status === 'authenticated' ? (

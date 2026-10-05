@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/authContext.js'
+import { employerSummary } from '../../auth/employerAccess.js'
 import { dashboardFor } from '../../auth/redirects.js'
 import { useAnnounce } from '../ui/announcerContext.js'
 import Button from '../ui/Button.jsx'
-import { PORTALS } from './portalMenus.js'
+import { portalFor } from './portalMenus.js'
+import BrandLink from './BrandLink.jsx'
 import SiteFooter from './SiteFooter.jsx'
 import SkipLink from './SkipLink.jsx'
 
@@ -16,7 +18,8 @@ export default function PortalLayout() {
   const navigate = useNavigate()
   const announce = useAnnounce()
   const [loggingOut, setLoggingOut] = useState(false)
-  const portal = PORTALS[role]
+  const portal = portalFor(user)
+  const summary = employerSummary(user)
 
   async function handleLogout() {
     setLoggingOut(true)
@@ -33,15 +36,14 @@ export default function PortalLayout() {
       <header className="border-b border-border bg-surface">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4 px-4 py-3">
           <div className="flex flex-wrap items-baseline gap-x-3">
-            <Link to={dashboardFor(role)} className="text-2xl font-bold text-primary">
-              OpenDoor
-            </Link>
+            <BrandLink to={dashboardFor(role)} />
             <span className="font-bold text-muted">{portal.name}</span>
           </div>
           <div className="flex flex-wrap items-center gap-3">
-            <span>
-              <span className="sr-only">Logged in as</span> {user.name}
-            </span>
+            <p>
+              <span className="sr-only">Logged in as</span> <span className="font-bold">{user.name}</span>
+              {summary && <span className="block text-sm text-muted">{summary}</span>}
+            </p>
             <Button variant="secondary" onClick={handleLogout} loading={loggingOut} loadingText="Logging out…">
               Log out
             </Button>

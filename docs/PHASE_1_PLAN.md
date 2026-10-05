@@ -76,7 +76,7 @@ The code goes to GitHub and is shared with the whole group, and possibly the pan
 
 | Situation | Admin account | Demo job seeker + employer |
 |---|---|---|
-| **Your laptop or a groupmate's** (`APP_ENV=local`), settings left blank | Created with a default: `admin@opendoor.test` / `OpenDoor@2026` | Created: `candidate@opendoor.test` and `employer@opendoor.test`, same default password |
+| **Your laptop or a groupmate's** (`APP_ENV=local`), settings left blank | Created with a default: `admin@opendoor.test` / `Admin_1234` *(was `OpenDoor@2026` before Phase 2)* | Created: `candidate@opendoor.test` and `employer@opendoor.test` (plus `hr@` and `individual@` from Phase 2) with `Demo_1234` |
 | **Your laptop**, settings filled in | Created with your email and password | Created with your demo password |
 | **Live site** (`APP_ENV=production` on Railway), settings filled in | Created with the email and password set on Railway | Created **only if** `SEED_DEMO_PASSWORD` is set. We will set it before the defense so the panel can log in as each role |
 | **Live site**, admin settings missing | **Seeding stops** with the message "Set SEED_ADMIN_EMAIL and SEED_ADMIN_PASSWORD before seeding production." | Not created |
@@ -85,7 +85,7 @@ So the simple defaults exist **only on local computers**. The live site can neve
 
 **Other details**
 - The `.test` email ending is reserved for testing and can never belong to a real person, so no real inbox is ever involved.
-- The default password `OpenDoor@2026` follows the password rule in §3.2.
+- The default passwords `Admin_1234` and `Demo_1234` follow the password rule in §3.2.
 - **Running the seeder again never resets a password.** If an account already exists, the seeder leaves it alone. Someone who changed the admin password keeps it.
 - The README will list the default local logins so groupmates can sign in right after setup.
 

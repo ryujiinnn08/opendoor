@@ -3,7 +3,7 @@ import { createContext, useContext } from 'react'
 export const AuthContext = createContext(null)
 
 /**
- * { user, role, status: 'loading' | 'guest' | 'authenticated', login, register, logout }
+ * { user, role, status: 'loading' | 'guest' | 'authenticated', login, register, logout, refresh }
  */
 export function useAuth() {
   const context = useContext(AuthContext)

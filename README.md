@@ -2,7 +2,7 @@
 
 A web-based job matching platform with accommodation-based filtering and post-hire accommodation verification for persons with disabilities.
 
-See [docs/CONCEPT_PLAN.md](docs/CONCEPT_PLAN.md) for the concept, architecture and build plan, and [docs/PHASE_1_PLAN.md](docs/PHASE_1_PLAN.md) for the current phase.
+See [docs/CONCEPT_PLAN.md](docs/CONCEPT_PLAN.md) for the concept, architecture and build plan. Phase plans: [Phase 1](docs/PHASE_1_PLAN.md) (accounts and shared lists, done), [Phase 2](docs/PHASE_2_PLAN.md) (employers, teams and job postings; 2A done).
 
 ## Structure
 
@@ -52,13 +52,23 @@ Open http://localhost:5173. Both apps must run on `localhost` (not `127.0.0.1`) 
 
 When the `SEED_*` settings in `backend/.env` are left blank, the seeder creates these accounts:
 
-| Role | Email | Password |
-|---|---|---|
-| Administrator | `admin@opendoor.test` | `OpenDoor@2026` |
-| Job seeker | `candidate@opendoor.test` | `OpenDoor@2026` |
-| Employer | `employer@opendoor.test` | `OpenDoor@2026` |
+| Role | Email | Password | What it shows |
+|---|---|---|---|
+| Administrator | `admin@opendoor.test` | `Admin_1234` | Verification queue, settings, shared lists |
+| Job seeker | `candidate@opendoor.test` | `Demo_1234` | Candidate portal |
+| Company owner | `employer@opendoor.test` | `Demo_1234` | Owner of the verified **OpenDoor Demo Corp.** (departments Human Resources and IT) |
+| HR officer | `hr@opendoor.test` | `Demo_1234` | HR officer in OpenDoor Demo Corp.'s Human Resources department |
+| Individual employer | `individual@opendoor.test` | `Demo_1234` | Employer hiring for themselves (no departments) |
 
-These defaults exist only outside production. On the live site the admin email and password must be set in the server's environment, and demo accounts are created only when `SEED_DEMO_PASSWORD` is set (see [docs/PHASE_1_PLAN.md §3.1](docs/PHASE_1_PLAN.md)).
+These defaults exist only outside production. On the live site the admin email and password must be set in the server's environment, and demo accounts are created only when `SEED_DEMO_PASSWORD` is set (see [docs/PHASE_1_PLAN.md §3.1](docs/PHASE_1_PLAN.md)). Running `php artisan db:seed` again never changes an account that already exists.
+
+## Changing the OpenDoor logo
+
+The header logo is a placeholder at `frontend/public/opendoor-logo.svg` (also used as the browser-tab icon). Save the real logo over that file with the same name. If the logo is a PNG, save it as `frontend/public/opendoor-logo.png` and change the two references to it: `frontend/src/components/layout/BrandLink.jsx` and `frontend/index.html`.
+
+## Database notes (XAMPP / MariaDB)
+
+XAMPP's MariaDB 10.4 automatically adds "update to the current time" to the first required `timestamp` column of a table. In migrations, use `dateTime()` (not `timestamp()`) for required date columns; nullable timestamps are fine.
 
 ## Tests
 

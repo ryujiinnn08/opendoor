@@ -10,6 +10,7 @@
   --color-border: var(--od-border);
   --color-primary: var(--od-primary);
   --color-primary-hover: var(--od-primary-hover);
+  --color-primary-soft: var(--od-primary-soft);
   --color-on-primary: var(--od-on-primary);
   --color-accent: var(--od-accent);
   --color-success: var(--od-success);
