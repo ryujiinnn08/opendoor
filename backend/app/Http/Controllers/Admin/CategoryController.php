@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\CategoryRequest;
 use App\Http\Resources\CategoryResource;
 use App\Models\Category;
+use App\Models\JobPosting;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Response;
+use Illuminate\Validation\ValidationException;
 
 class CategoryController extends Controller
 {
@@ -25,9 +27,18 @@ class CategoryController extends Controller
         return new CategoryResource($category);
     }
 
-    // TODO(Phase 2): refuse deletion while job postings use the category (spec F11.1).
+    /**
+     * A category used by any posting, even a deleted one, can't be deleted (spec F11.1,
+     * plan PHASE_2 decision 32); renaming is always allowed.
+     */
     public function destroy(Category $category): Response
     {
+        if (JobPosting::withTrashed()->where('category_id', $category->id)->exists()) {
+            throw ValidationException::withMessages([
+                'category' => "\"{$category->name}\" is used by job postings, so it can't be deleted. Rename it instead.",
+            ]);
+        }
+
         $category->delete();
 
         return response()->noContent();

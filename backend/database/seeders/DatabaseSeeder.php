@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             AccommodationSeeder::class,
             UserSeeder::class,
             DemoEmployerSeeder::class,
+            DemoJobPostingSeeder::class,
         ]);
     }
 }

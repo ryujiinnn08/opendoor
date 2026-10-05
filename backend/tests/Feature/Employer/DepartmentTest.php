@@ -4,6 +4,7 @@ namespace Tests\Feature\Employer;
 
 use App\Models\AppSetting;
 use App\Models\DepartmentInvite;
+use App\Models\JobPosting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\BuildsTeams;
 use Tests\TestCase;
@@ -120,6 +121,18 @@ class DepartmentTest extends TestCase
         $this->deleteJson("/api/employer/departments/{$it->id}")
             ->assertUnprocessable()
             ->assertJsonValidationErrors(['department' => 'A company needs at least one department.']);
+    }
+
+    public function test_departments_with_postings_cannot_be_deleted(): void
+    {
+        [$owner, $company] = $this->companyWithOwner();
+        $it = $company->departments()->create(['name' => 'IT', 'member_limit' => 2]);
+        JobPosting::factory()->in($it)->create()->delete();
+
+        $this->actingAs($owner, 'web')->deleteJson("/api/employer/departments/{$it->id}")
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['department' => 'IT has job postings (OpenDoor keeps deleted ones too), so it can\'t be deleted. Rename it instead.']);
+        $this->assertModelExists($it);
     }
 
     public function test_hr_officers_and_individuals_cannot_manage_departments(): void

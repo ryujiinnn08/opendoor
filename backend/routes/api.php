@@ -62,6 +62,15 @@ Route::middleware('auth:sanctum')->group(function () {
                 Route::delete('invites/{invite}', [Employer\InviteController::class, 'destroy']);
                 Route::patch('members/{member}', [Employer\MemberController::class, 'update']);
                 Route::delete('members/{member}', [Employer\MemberController::class, 'destroy']);
+
+                // Job postings (M4, Phase 2B): department-scoped by JobPostingPolicy.
+                Route::get('dashboard', [Employer\DashboardController::class, 'show']);
+                Route::get('job-postings', [Employer\JobPostingController::class, 'index']);
+                Route::post('job-postings', [Employer\JobPostingController::class, 'store']);
+                Route::get('job-postings/{posting}', [Employer\JobPostingController::class, 'show']);
+                Route::put('job-postings/{posting}', [Employer\JobPostingController::class, 'update']);
+                Route::delete('job-postings/{posting}', [Employer\JobPostingController::class, 'destroy']);
+                Route::patch('job-postings/{posting}/status', [Employer\JobPostingStatusController::class, 'update']);
             });
         });
 
@@ -75,6 +84,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
             Route::get('employers', [Admin\EmployerVerificationController::class, 'index']);
             Route::patch('employers/{employer}/verify', [Admin\EmployerVerificationController::class, 'update']);
+
+            Route::get('job-postings', [Admin\JobPostingApprovalController::class, 'index']);
+            Route::get('job-postings/{posting}', [Admin\JobPostingApprovalController::class, 'show']);
+            Route::patch('job-postings/{posting}/approve', [Admin\JobPostingApprovalController::class, 'update']);
 
             Route::get('settings', [Admin\SettingsController::class, 'show']);
             Route::put('settings', [Admin\SettingsController::class, 'update']);

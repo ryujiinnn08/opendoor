@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\EmployerType;
+use App\Enums\PostingStatus;
 use App\Enums\VerificationStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Accommodation;
 use App\Models\Category;
 use App\Models\Employer;
+use App\Models\JobPosting;
 use App\Services\TeamCapacity;
 use Illuminate\Http\JsonResponse;
 
@@ -21,6 +23,7 @@ class DashboardController extends Controller
             'companies_waiting_for_verification' => Employer::where('type', EmployerType::Company)
                 ->where('verification_status', VerificationStatus::Pending)
                 ->count(),
+            'postings_waiting_for_approval' => JobPosting::where('status', PostingStatus::Pending)->count(),
             'hr_per_department_cap' => $capacity->cap(),
         ]]);
     }

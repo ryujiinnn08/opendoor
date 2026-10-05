@@ -1,9 +1,10 @@
 # Phase 2 Plan: Employer Side
 
-> Status: **Phase 2A built (2026-10-05)**: demo steps A1–A8 verified in the browser; 91 backend and 51 frontend tests pass. **Phase 2B next** (after your check-in).
+> Status: **Phase 2A built (2026-10-05)**: demo steps A1–A8 verified in the browser; 91 backend and 51 frontend tests pass. **Phase 2B design approved (2026-10-05)**, being built.
 > Part of: [CONCEPT_PLAN.md](CONCEPT_PLAN.md), build phase 2 of 7
 > Builds on: [PHASE_1_PLAN.md](PHASE_1_PLAN.md) (accounts, roles, categories, accommodation types)
 > Rev. 2 (2026-10-05): companies now have **departments** and **several HR accounts** joined by invite link; **individual employers** are allowed. Phase 2 is split into **2A** (employers and teams) and **2B** (job postings and approvals).
+> Rev. 3 (2026-10-05): Phase 2B details decided (§3.3, decisions 24–38), including **Change closing date**, and a UI polish direction (§4.10).
 
 ---
 
@@ -44,9 +45,10 @@ The **employees** are the job seekers who get hired through postings (Phase 4). 
 
 ### Phase 2B: Job postings and approvals
 - Owners, HR officers and individual employers **create job postings** with every field required: title, description, category, location, employment type, work setup, interview format, closing date, and at least one accommodation (each with an optional note).
-- **Save a draft, submit for approval, edit, close, reopen and delete.** Editing an open posting sends it back for approval.
+- **Save a draft, submit for approval, edit, close, reopen and delete.** Editing an open posting sends it back for approval. **Changing only the closing date** of an open posting doesn't (decision 25).
 - **Admins approve or reject postings**, with a reason.
-- **Also fixed:** a category used by any posting can no longer be deleted.
+- **Also fixed:** a category used by any posting can no longer be deleted, and neither can a department (decision 20).
+- **The UI gets a polish pass** (§4.10): accommodations become the headline of every posting, with a firmer heading scale and fewer boxes.
 
 ---
 
@@ -117,6 +119,28 @@ The **employees** are the job seekers who get hired through postings (Phase 4). 
 | 22 | Who creates postings in a company? | **The owner (choosing the department) and HR officers (always their own department)** | Matches decision 3c |
 | 23 | Demo accounts | `admin@opendoor.test` (`Admin_1234`); demo company **"OpenDoor Demo Corp."** (verified) owned by `employer@opendoor.test`, with departments **Human Resources** and **IT**; HR officer `hr@opendoor.test` in Human Resources; individual employer `individual@opendoor.test`; job seeker `candidate@opendoor.test`. All demo accounts use `Demo_1234`. **5 sample postings** across both departments and the individual | Covers every role and permission in the demo |
 
+### 3.3 Phase 2B details (approved 2026-10-05)
+
+Gaps in §1–§4 that needed an answer before building postings.
+
+| # | Decision | Why |
+|---|---|---|
+| 24 | A posting **waiting for approval can still be edited**. It stays waiting (and must stay complete); the admin reviews the latest version | Lets people fix a typo without withdrawing the posting |
+| 25 | **Change closing date:** open postings get a separate action that sets a new date (tomorrow to 6 months ahead). It needs **no approval**, like Reopen (decision 7). Saving anything else on an open posting still sends it back for approval | Extending a deadline shouldn't take a live posting offline |
+| 26 | Editing a **Closed** posting also sends it back for approval | Otherwise Reopen, which needs no approval, would publish unapproved changes |
+| 27 | **Rejected** postings: saving keeps them Rejected until they are resubmitted. Resubmitting without changes is allowed | The employer may disagree with the reason or fix it elsewhere |
+| 28 | **Company postings always have a department, even as drafts** (decision 20). It is chosen automatically when the company has one department. HR officers' postings always go to their own department; individual employers' postings have none | Keeps department visibility (decision 3c) true for every posting |
+| 29 | The **closing date** is a date without a time: the posting stays open until the end of that day, Philippine time. The range (tomorrow to 6 months ahead) is checked whenever a posting is submitted or saved while waiting, and when changing the date or reopening; not when saving a draft or a rejected posting | Clear for employers and job seekers; drafts can wait |
+| 30 | **Location** is required free text, pre-filled from the employer's address. For remote jobs the hint suggests e.g. "Anywhere in the Philippines" | Every field is required (decision 5), and remote jobs still have a "where" |
+| 31 | **Retired accommodation types** already on a posting stay, shown as "no longer offered". They can be removed but not added again | Nothing changes on a posting without the employer's choice |
+| 32 | A **department or category used by any posting**, including deleted ones, can't be deleted. The message suggests renaming | Deleted postings are kept (§4.4), so what they point to must stay |
+| 33 | **Posting approvals** has tabs **Waiting** (oldest first), **Open** and **Rejected**. The review page shows the employer's verification badge, "Changed after approval" when an approved posting was edited, and a note when the closing date passed while it was waiting (approving it then shows it as Closed until the employer reopens it). **Admins never see drafts** | Same pattern as Employer verification; drafts are private |
+| 34 | **The server decides the buttons:** every posting in the API lists the actions the person may take on it | The status rules live in one place (the server), not copied into React |
+| 35 | **Addresses:** all employer posting addresses are under `/api/employer/…` (Appendix A), which keeps `/api/job-postings` free for Phase 3's public search. Submitting happens when saving (`submit: true`) | Matches the rest of the employer API |
+| 36 | **The five demo postings:** Human Resources: *HR Assistant* (Open) and *Recruitment Coordinator* (Waiting); IT: *Junior Web Developer*, remote (Open) and *IT Support Specialist* (Draft); individual employer: *Part-time Home-based Bookkeeper* (Open). Added only when those employers exist and have no postings yet | Every list and the admin queue have something to show |
+| 37 | The **UI polish** (§4.10) is done in the shared building blocks, so existing pages improve too, with no change in behavior | One pass, consistent everywhere |
+| 38 | **Checks before finishing:** Superpowers code review and verification, plus GSD's code-review, UI-audit and security agents run directly on the changed files. GSD's `.planning/` folder is not set up in Phase 2 (it can be generated from `docs/` later with `/gsd-ingest-docs`) | Two independent reviews; `docs/` stays the team's plan |
+
 ---
 
 ## 4. What gets built
@@ -163,15 +187,22 @@ Links that are expired, revoked, already used, or for a department that has sinc
 | From | Action | To | Who |
 |---|---|---|---|
 | *(new)* | Save draft | **Draft** | Owner, HR officer (own department) or individual |
-| Draft | Submit for approval | **Waiting for approval** | Same (all fields and at least 1 accommodation required) |
+| *(new)* or Draft | Submit for approval | **Waiting for approval** | Same (all fields and at least 1 accommodation required) |
+| Draft | Edit and save | **Draft** | Same |
+| Waiting for approval | Edit and save | **Waiting for approval** | Same (must stay complete, decision 24) |
 | Waiting for approval | Approve | **Open** | Admin |
 | Waiting for approval | Reject, with a reason | **Rejected** | Admin |
-| Rejected | Edit and resubmit | **Waiting for approval** | Owner, HR officer or individual |
+| Rejected | Edit and save | **Rejected** | Owner, HR officer or individual |
+| Rejected | Resubmit (with or without changes) | **Waiting for approval** | Same |
 | Open | Edit and save | **Waiting for approval** | Same (warned first) |
+| Open | Change closing date | **Open** | Same (no approval, decision 25) |
 | Open | Close | **Closed** | Same |
-| Closed | Reopen | **Open** | Same (closing date must be in the future) |
-| Open | Closing date passes | Shown as **Closed** | Automatic |
+| Closed | Reopen | **Open** | Same (new closing date between tomorrow and 6 months ahead) |
+| Closed | Edit and save | **Waiting for approval** | Same (warned first, decision 26) |
+| Open | Closing date passes | Shown as **Closed** (can be reopened) | Automatic |
 | Any | Delete | Hidden from every list, kept in the database | Same |
+
+Any other change is refused with a plain message.
 
 ### 4.5 Company verification (2A)
 
@@ -204,8 +235,8 @@ Links that are expired, revoked, already used, or for a department that has sinc
 | Company (owner) | Company form, logo upload and preview, and the **Verification** section (status, rejection reason, registration type and number) | 2A |
 | My profile (individual) | Name, location, about, optional photo or logo | 2A |
 | Team (owner) | One section per department: name, HR limit ("2 of 3 places used"), HR officers with **Move** and **Remove**, unused invites with expiry and **Revoke**, and **Create invite**. Add, rename and delete departments | 2A |
-| Job postings | Postings with status badge, department, closing date and actions; filter links (All · Open · Waiting · Drafts · Rejected · Closed). The owner also gets a department filter | 2B |
-| Create / Edit posting | Every field required to submit; department chooser for the owner; accommodation picker with optional notes; **Save draft** and **Submit for approval**; warning when editing an open posting | 2B |
+| Job postings | Postings with status badge, department, closing date and actions (only the ones the server allows, decision 34); filter links (All · Open · Waiting · Drafts · Rejected · Closed). The owner also gets a department filter. **Close**, **Reopen** and **Change closing date** work from the list | 2B |
+| Create / Edit posting | Every field required to submit; department chooser for the owner; accommodation picker with optional notes; **Save draft** and **Submit for approval**. Editing an open or closed posting shows a warning first and the button says **Save and send for approval**; a rejected posting shows the admin's reason | 2B |
 | Preview posting | The posting as job seekers will see it (reused as the public job page in Phase 3) | 2B |
 
 **Admin portal** (menu gains **Employer verification**, **Posting approvals** and **Settings**):
@@ -215,8 +246,8 @@ Links that are expired, revoked, already used, or for a department that has sinc
 | Dashboard (updated) | Companies waiting for verification and postings waiting for approval, with counts | 2A / 2B |
 | Employer verification | Companies by status (Waiting · Verified · Rejected), with details, registration type and number, **Verify** or **Reject** (asks for a reason) | 2A |
 | Settings | **HR officers per department cap**, with a note on what happens when it's lowered (decision 16) | 2A |
-| Posting approvals | Postings waiting for approval, oldest first | 2B |
-| Review posting | Full posting, plus **Approve** or **Reject** (asks for a reason) | 2B |
+| Posting approvals | Tabs **Waiting** (oldest first), **Open** and **Rejected** (decision 33) | 2B |
+| Review posting | Full posting with the employer's verification badge and "Changed after approval" when relevant, plus **Approve** or **Reject** (asks for a reason) | 2B |
 
 ### 4.7 New reusable building blocks
 
@@ -227,10 +258,11 @@ Links that are expired, revoked, already used, or for a department that has sinc
 | Copy link box | Read-only field with the invite link, a **Copy link** button, and "Link copied" announced to screen readers | 2A |
 | Reason dialog | Confirm dialog with a required text box, for rejecting companies and postings | 2A |
 | Places counter | "2 of 3 places used" as text, with a full-department message | 2A |
-| Accommodation picker | Grouped checklist; ticking an item reveals its labelled note field. Reused for candidate needs and filters in Phase 3 | 2B |
-| Posting status badge | Icon + text for Draft, Waiting for approval, Open, Rejected, Closed | 2B |
-| Filter tabs | Links that mark the active filter (`aria-current`) | 2B |
-| Job details | Read-only posting layout for Preview, Review and the Phase 3 public page | 2B |
+| Accommodation picker | Grouped checklist with a simple icon per group (always with its text); ticking an item reveals its labelled note field. Reused for candidate needs and filters in Phase 3 | 2B |
+| Posting status badge | A distinct icon + text for Draft, Waiting for approval, Open, Rejected, Closed | 2B |
+| Filter tabs | Links that mark the active filter (`aria-current`). Built in 2A; now keeps other filters (e.g., the department) when switching | 2A, 2B |
+| Job details | Read-only posting layout for Preview, Review and the Phase 3 public page, with the accommodations panel as its headline (§4.10) | 2B |
+| Closing date dialog | Date field with the allowed range in its hint; used by **Reopen** and **Change closing date** | 2B |
 
 ### 4.8 Tests
 
@@ -248,15 +280,18 @@ Links that are expired, revoked, already used, or for a department that has sinc
 - Seeding twice creates no duplicates and never resets a password.
 
 **Phase 2B server tests:**
-- A draft saves with just a title; submitting needs every field and at least 1 accommodation; notes are saved; retired accommodations can't be added.
-- Every allowed status change works, every other is refused; editing an open posting returns it to waiting; reopening needs a future closing date.
+- A draft saves with just a title (plus a department for company postings); submitting needs every field and at least 1 accommodation; notes are saved; retired accommodations can't be added, but ones already on a posting may stay.
+- Every allowed status change works, every other is refused; editing an open or closed posting returns it to waiting; editing a waiting posting keeps it waiting; reopening and changing the closing date need a date between tomorrow and 6 months ahead, and neither needs approval.
+- An open posting past its closing date is listed and filtered as Closed, and can be reopened.
 - **Department visibility:** an HR officer can't view, edit, delete or change the status of another department's posting (403); the owner can; another company can't.
 - An HR officer's postings always go to their own department, even if a different department is sent.
 - Individual employers' postings have no department.
-- Admin approve and reject (reason required); only waiting postings can be decided.
-- Categories used by any posting (including deleted ones) can't be deleted.
+- Each posting lists the actions the person may take (decision 34).
+- Admin approve and reject (reason required); only waiting postings can be decided; admins never see drafts.
+- Categories and departments used by any posting (including deleted ones) can't be deleted.
+- Dashboard counts match the postings each person may see.
 
-**Page tests (both parts):** picker notes appear only when ticked; badges show text; the reason dialog needs a reason; the copy-link box announces "Link copied"; the menu matches the person's role; automatic accessibility checks pass.
+**Page tests (both parts):** picker notes appear only when ticked; badges show text; the reason dialog needs a reason; the copy-link box announces "Link copied"; the menu matches the person's role; the owner gets the department chooser and HR officers don't; filter tabs keep the department filter; automatic accessibility checks pass.
 
 ### 4.9 The OpenDoor logo (where to paste yours)
 
@@ -264,6 +299,23 @@ Links that are expired, revoked, already used, or for a department that has sinc
 - **To use your real logo:** save it over that file with the same name. In Finder, open the project folder → `frontend` → `public`, and replace `opendoor-logo.svg`.
 - **If your logo is a PNG** (or another format), save it in the same folder as `opendoor-logo.png` and tell me. It's a one-line change to point the header at it.
 - A square image looks best; it is shown about 32 px tall.
+
+### 4.10 UI polish (2B)
+
+**Direction:** a job posting is a promise, so **accommodations are the headline** of every posting, not a list at the bottom.
+
+| | Choice |
+|---|---|
+| Color | The approved palette stays: purple `#5b21b6` for actions, links and the current page; ink `#1c1a24` for text; lavender `#f8f7fb` page and white surfaces; **amber `#a54a06` only for accommodation promises**; green and red only for statuses (always with an icon and text) |
+| Type | **Atkinson Hyperlegible** only (made for low-vision readers). A firmer scale: page titles 34–42 px, sections 26 px, subsections 21 px, body 17 px; lines of text under about 70 characters |
+| Layout | Fewer boxes. Lists of postings are ruled rows, not a grid of identical cards; cards stay only for things handled as a unit (dashboard tiles, departments). Left-aligned throughout |
+| The one bold element | The **accommodations panel**: an amber rule, a simple icon per accommodation group (always with its text), and each accommodation with its note |
+| Motion | Only one: ticking an accommodation expands its note field. Off when the device asks for reduced motion |
+| Avoided | All-caps labels above headings, decorative gradients and shadows, dot-separated detail lines, "coming soon" tiles once a feature exists |
+
+**Job details** (Preview, admin Review, and the Phase 3 public page): title and status; employer name with the verified badge (or "Individual employer") and department; then, on wide screens, the description on the left and the accommodations panel plus "At a glance" (work setup, employment type, location, interview format, closing date) on the right. On phones: title, employer, accommodations, at a glance, then the description.
+
+**Shared building blocks** get the polish, so existing pages improve with no change in behavior: heading scale, a page header (title, short intro, main action), status badges, dashboard tiles with real counts, and empty states that say what to do next.
 
 ---
 
@@ -284,9 +336,9 @@ Links that are expired, revoked, already used, or for a department that has sinc
 | Step | Work | Done when |
 |---|---|---|
 | 6 | Posting tables, status rules, department-aware permissions | Rule tests pass |
-| 7 | Posting endpoints; admin approval endpoints; category delete guard; demo postings | All 2B server tests pass |
-| 8 | Accommodation picker, badges, filter tabs, job details; Job postings, form and Preview pages; admin Approvals and Review pages | Demo steps B1–B6 work |
-| 9 | Keyboard and phone-width pass (B7), README update, commit | Phase 2 finished |
+| 7 | Posting endpoints; admin approval endpoints; category and department delete guards; employer dashboard counts; demo postings | All 2B server tests pass; backend commit |
+| 8 | UI polish of the shared building blocks (§4.10); accommodation picker, badges, filter tabs, job details, closing date dialog; Job postings, form and Preview pages; admin Approvals and Review pages; dashboards | Demo steps B1–B6 work |
+| 9 | Checks (decision 38) and fixes; keyboard and phone-width pass (B7); README update; frontend commit | Phase 2 finished |
 
 ---
 
@@ -354,13 +406,14 @@ npm run test
 
 | Method | Address | Who | Purpose |
 |---|---|---|---|
-| GET | `/api/employer/job-postings?status=&department=` | Owner, HR, individual | Postings they may see |
-| GET | `/api/employer/job-postings/{posting}` | Same (permission-checked) | One posting, any status |
-| POST | `/api/job-postings` | Same | Create (`submit: true` submits straight away; owner sends `department_id`) |
-| PUT, DELETE | `/api/job-postings/{posting}` | Same | Update / soft-delete |
-| PATCH | `/api/job-postings/{posting}/status` | Same | `action`: `submit`, `close`, `reopen` (+ `closes_at`) |
-| GET | `/api/admin/job-postings?status=`, `/api/admin/job-postings/{posting}` | Admin | Approval queue / one posting |
-| PATCH | `/api/admin/job-postings/{posting}/approve` | Admin | `decision`: `approve` / `reject` (+ `reason`) |
+| GET | `/api/employer/job-postings?status=&department=` | Owner, HR, individual | Postings they may see; `status` uses the shown status (an expired open posting is `closed`); `department` for owners |
+| GET | `/api/employer/job-postings/{posting}` | Same (permission-checked) | One posting, any status, with the `actions` the person may take |
+| POST | `/api/employer/job-postings` | Same | Create (`submit: true` submits straight away; the owner sends `department_id`) |
+| PUT, DELETE | `/api/employer/job-postings/{posting}` | Same | Save (`submit: true` submits a draft or rejected posting; open and closed postings always go back to waiting) / soft-delete |
+| PATCH | `/api/employer/job-postings/{posting}/status` | Same | `action`: `close`, `reopen` (+ `closes_on`), `change_closing_date` (+ `closes_on`) |
+| GET | `/api/employer/dashboard` | Owner, HR, individual | Posting counts by status (whole company for owners, own department for HR officers) |
+| GET | `/api/admin/job-postings?status=`, `/api/admin/job-postings/{posting}` | Admin | Approval queue (`pending` oldest first, `open`, `rejected`) / one posting (never drafts) |
+| PATCH | `/api/admin/job-postings/{posting}/approve` | Admin | `decision`: `approve` / `reject` (+ `reason`); only waiting postings |
 
 ### B. Main files
 
@@ -368,14 +421,16 @@ npm run test
 - Migrations: `employers`, `departments`, `employer_members`, `department_invites`, `app_settings` (2A); `job_postings`, `job_posting_accommodation` (2B)
 - Enums: `EmployerType` (company, individual), `MemberRole` (owner, hr), `VerificationStatus`, `RegistrationType` (dti, sec, cda); `PostingStatus` with `canTransitionTo()`, `EmploymentType`, `WorkSetup`, `InterviewFormat` (2B)
 - Models: `Employer`, `Department`, `EmployerMember`, `DepartmentInvite`, `AppSetting`; `User::membership()`; `JobPosting` (SoftDeletes) (2B)
-- Services: `TeamCapacity` (places used = members + open invites; limit and cap checks), `InviteService` (create, hash, accept, revoke), `JobPostingWorkflow` (2B)
+- Services: `TeamCapacity` (places used = members + open invites; limit and cap checks), `InviteService` (create, hash, accept, revoke), `JobPostingWorkflow` (2B: saving, status changes, the actions list)
 - Policies: `EmployerPolicy`, `DepartmentPolicy`, `DepartmentInvitePolicy`, `EmployerMemberPolicy`; `JobPostingPolicy` with department scope (2B)
 - Middleware: `employer.profile` (sends employers without a profile to setup; the API answers 409 "Set up your employer profile first")
-- Seeders: `UserSeeder` defaults `Admin_1234` / `Demo_1234`; `DemoEmployerSeeder` (company, departments, HR officer, individual) (2A); demo postings (2B)
+- Seeders: `UserSeeder` defaults `Admin_1234` / `Demo_1234`; `DemoEmployerSeeder` (company, departments, HR officer, individual) (2A); `DemoJobPostingSeeder` (2B)
+- Controllers (2B): `Employer\JobPostingController`, `Employer\JobPostingStatusController`, `Employer\DashboardController`, `Admin\JobPostingApprovalController`; `JobPostingResource`
 
 **Frontend (`frontend/src/`)**
 - Pages: `portals/employer/SetupPage`, `CompanyPage`, `IndividualProfilePage`, `TeamPage`; `portals/public/JoinPage`; `portals/admin/EmployerVerificationPage`, `SettingsPage` (2A); `JobPostingsPage`, `JobPostingFormPage`, `JobPostingPreviewPage`, `admin/PostingApprovalsPage`, `admin/PostingReviewPage` (2B)
-- Components: `VerifiedBadge`, `FileUpload`, `CopyLinkBox`, `ReasonDialog`, `PlacesCounter` (2A); `AccommodationPicker`, `PostingStatusBadge`, `FilterTabs`, `JobDetails` (2B)
+- Components: `VerificationBadge`, `FileUpload`, `CopyLinkBox`, `ReasonDialog`, `PlacesCounter`, `FilterTabs` (2A); `AccommodationPicker`, `AccommodationGroupIcon`, `PostingStatusBadge`, `JobDetails`, `ClosingDateDialog` (2B)
+- API and lists (2B): `api/jobPostings.js`; `lib/postingOptions.js` (employment types, work setups, interview formats)
 - Auth: `/api/me` also returns the employer membership (type, role, department), so menus and route guards can tell owner, HR officer and individual apart
 - Logo: `public/opendoor-logo.svg` placeholder, shown in `PublicLayout` and `PortalLayout`
 

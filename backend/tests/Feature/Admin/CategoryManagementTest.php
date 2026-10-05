@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\Category;
+use App\Models\JobPosting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -59,6 +60,17 @@ class CategoryManagementTest extends TestCase
         $this->deleteJson("/api/admin/categories/{$category->id}")->assertNoContent();
 
         $this->assertModelMissing($category);
+    }
+
+    public function test_categories_used_by_postings_cannot_be_deleted(): void
+    {
+        $category = Category::factory()->create(['name' => 'Healthcare']);
+        JobPosting::factory()->create(['category_id' => $category->id])->delete();
+
+        $this->deleteJson("/api/admin/categories/{$category->id}")
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors(['category' => '"Healthcare" is used by job postings, so it can\'t be deleted. Rename it instead.']);
+        $this->assertModelExists($category);
     }
 
     public function test_public_list_is_alphabetical(): void

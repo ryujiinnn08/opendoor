@@ -34,6 +34,21 @@ return [
         'first_department_name' => 'General',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Job postings
+    |--------------------------------------------------------------------------
+    |
+    | Closing dates are whole days in Philippine time: a posting stays open
+    | until the end of its closing date (plan PHASE_2 decisions 11 and 29).
+    |
+    */
+
+    'postings' => [
+        'timezone' => 'Asia/Manila',
+        'max_months_ahead' => 6,
+    ],
+
     'seed' => [
         'admin_email' => env('SEED_ADMIN_EMAIL'),
         'admin_password' => env('SEED_ADMIN_PASSWORD'),

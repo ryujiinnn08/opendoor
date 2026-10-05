@@ -5,6 +5,7 @@ namespace Tests\Feature\MasterData;
 use App\Enums\Role;
 use App\Models\Accommodation;
 use App\Models\Category;
+use App\Models\JobPosting;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\UserSeeder;
@@ -25,6 +26,17 @@ class SeederTest extends TestCase
         $this->assertSame(10, Category::count());
         $this->assertSame(18, Accommodation::count());
         $this->assertSame(5, User::count());
+
+        $this->assertSame(5, JobPosting::count());
+        $this->assertSame(
+            ['draft' => 1, 'open' => 3, 'pending' => 1],
+            JobPosting::pluck('status')->map->value->countBy()->sortKeys()->all(),
+        );
+
+        // A posting someone deleted is never put back.
+        JobPosting::first()->delete();
+        $this->seed(DatabaseSeeder::class);
+        $this->assertSame(5, JobPosting::withTrashed()->count());
     }
 
     public function test_local_defaults_create_admin_and_demo_accounts(): void

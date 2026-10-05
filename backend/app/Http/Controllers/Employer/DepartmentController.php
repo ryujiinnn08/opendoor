@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Employer\DepartmentRequest;
 use App\Http\Resources\DepartmentResource;
 use App\Models\Department;
+use App\Models\JobPosting;
 use App\Services\TeamCapacity;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -51,7 +52,10 @@ class DepartmentController extends Controller
         return new DepartmentResource($department);
     }
 
-    // TODO(Phase 2B): also refuse while the department has job postings (plan PHASE_2 decision 20).
+    /**
+     * Only empty departments can be deleted: no HR officers and no postings, counting deleted
+     * postings, which are kept (plan PHASE_2 decisions 20 and 32).
+     */
     public function destroy(Department $department, TeamCapacity $capacity): Response
     {
         Gate::authorize('manage', $department);
@@ -59,6 +63,12 @@ class DepartmentController extends Controller
         if ($capacity->hrCount($department) > 0) {
             throw ValidationException::withMessages([
                 'department' => "Move or remove the HR officers in {$department->name} before deleting it.",
+            ]);
+        }
+
+        if (JobPosting::withTrashed()->where('department_id', $department->id)->exists()) {
+            throw ValidationException::withMessages([
+                'department' => "{$department->name} has job postings (OpenDoor keeps deleted ones too), so it can't be deleted. Rename it instead.",
             ]);
         }
 
