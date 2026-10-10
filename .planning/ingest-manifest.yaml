@@ -1,18 +1,27 @@
-# Input for /gsd-ingest-docs: the plans GSD turns into PROJECT, REQUIREMENTS, ROADMAP and STATE.
+# Input for /gsd-ingest-docs: the documents GSD turns into PROJECT, REQUIREMENTS, ROADMAP and STATE.
 # Paths are relative to the repository root. Lower precedence wins a conflict:
-# newer phase plans refine the concept plan, and the 2B implementation plan is supporting detail.
+# the approved phase plans are the newest decisions; the papers (revised 2026-10) already include
+# Phase 2's departments and hosting choices, so they rank above the older concept plan.
 docs:
   - path: .planning/PHASE_2_PLAN.md
     type: SPEC
     precedence: 0
-  - path: .planning/PHASE_1_PLAN.md
+  - path: .planning/papers/MODULES_AND_FEATURES.md
     type: SPEC
     precedence: 1
-  - path: .planning/CONCEPT_PLAN.md
+  - path: .planning/papers/REVISED_PROPOSAL.md
     type: PRD
     precedence: 2
+  - path: .planning/PHASE_1_PLAN.md
+    type: SPEC
+    precedence: 3
+  - path: .planning/CONCEPT_PLAN.md
+    type: PRD
+    precedence: 4
   - path: .planning/superpowers/plans/2026-10-05-phase-2b-job-postings.md
     type: DOC
-    precedence: 3
+    precedence: 5
+# The two papers are local only (not in git) until the team decides to publish them;
+# the repository is public.
 # Not listed on purpose: .planning/PHASE_3_PLAN.md is a draft with open questions.
 # Add it (type SPEC, precedence 0) once it is approved.
