@@ -6,7 +6,9 @@ use App\Http\Middleware\EnsureUserIsActive;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -33,4 +35,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*') || $request->expectsJson(),
         );
+
+        // A record that doesn't exist (or was deleted) gets a plain message instead of
+        // Laravel's "No query results for model [App\Models\...]", which users would see.
+        $exceptions->render(function (NotFoundHttpException $e, Request $request) {
+            if ($request->is('api/*') && ($e->getPrevious() instanceof ModelNotFoundException || $e->getMessage() === '')) {
+                return response()->json(['message' => "We couldn't find that. It may have been deleted."], 404);
+            }
+        });
     })->create();

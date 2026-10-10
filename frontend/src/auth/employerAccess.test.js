@@ -18,7 +18,7 @@ describe('employerSummary', () => {
     expect(employerSummary({ role: 'employer', membership: { role: 'owner', employer: company } })).toBe('Owner, Acme Corp.')
     expect(
       employerSummary({ role: 'employer', membership: { role: 'hr', employer: company, department: { name: 'IT' } } }),
-    ).toBe('HR officer, IT · Acme Corp.')
+    ).toBe('HR officer in IT, Acme Corp.')
     expect(employerSummary({ role: 'admin' })).toBeNull()
   })
 })

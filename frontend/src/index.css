@@ -11,10 +11,34 @@
   --color-primary: var(--od-primary);
   --color-primary-hover: var(--od-primary-hover);
   --color-primary-soft: var(--od-primary-soft);
+  --color-success-soft: var(--od-success-soft);
+  --color-danger-soft: var(--od-danger-soft);
+  --color-neutral-soft: var(--od-neutral-soft);
   --color-on-primary: var(--od-on-primary);
   --color-accent: var(--od-accent);
   --color-success: var(--od-success);
   --color-danger: var(--od-danger);
+}
+
+/* Type scale and the one motion (plan PHASE_2 §4.10). Sizes are in rem, so the large-text
+   setting scales them; the reduced-motion rule below turns the animation off. */
+@theme {
+  --text-title: 2rem;
+  --text-title--line-height: 1.15;
+  --text-title-lg: 2.5rem;
+  --text-title-lg--line-height: 1.1;
+  --animate-reveal: od-reveal 160ms ease-out;
+
+  @keyframes od-reveal {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
 }
 
 @layer base {
@@ -30,6 +54,12 @@
   :focus-visible {
     outline: 3px solid var(--od-focus);
     outline-offset: 3px;
+  }
+
+  /* Long words and links people type (URLs, emails) wrap instead of making the page scroll
+     sideways on phones (WCAG 1.4.10). :where() keeps this easy to override. */
+  :where(h1, h2, h3, h4, p, li, dt, dd, label, legend) {
+    overflow-wrap: anywhere;
   }
 
   /* Headings receive focus on route change; no ring needed for that. */

@@ -93,8 +93,9 @@ export default function DepartmentCard({
             <li key={member.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
               <div>
                 <p className="font-bold">{member.name}</p>
-                <p className="text-muted">
-                  {member.email} · joined {formatDate(member.joined_at)}
+                <p className="flex flex-wrap gap-x-4 text-muted">
+                  <span>{member.email}</span>
+                  <span>Joined {formatDate(member.joined_at)}</span>
                 </p>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -116,8 +117,9 @@ export default function DepartmentCard({
           <ul className="mt-2 divide-y divide-border">
             {department.open_invites.map((invite) => (
               <li key={invite.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                <p>
-                  Created {formatDate(invite.created_at)} · expires {formatDate(invite.expires_at)}
+                <p className="flex flex-wrap gap-x-4">
+                  <span>Created {formatDate(invite.created_at)}</span>
+                  <span>Expires {formatDate(invite.expires_at)}</span>
                 </p>
                 <Button
                   variant="secondary"

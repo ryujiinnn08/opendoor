@@ -51,6 +51,10 @@ class JobPostingWorkflow
     public function update(JobPosting $posting, User $editor, array $fields, ?array $accommodations, bool $submit): JobPosting
     {
         return DB::transaction(function () use ($posting, $editor, $fields, $accommodations, $submit) {
+            // Re-read under a lock: if an admin decided after this request loaded the posting,
+            // the save must see the new status (an approved posting goes back for review).
+            $posting = JobPosting::whereKey($posting->id)->lockForUpdate()->firstOrFail();
+
             $posting->fill($fields)->forceFill([
                 'department_id' => $this->departmentFor($editor, $fields['department_id'] ?? $posting->department_id),
             ]);
@@ -124,25 +128,33 @@ class JobPostingWorkflow
     }
 
     /**
-     * An admin approves a waiting posting; it is open until its closing date.
+     * An admin approves or rejects the version of a waiting posting they reviewed. The row is
+     * locked, and a posting changed since the admin loaded it is refused, so nothing goes live
+     * unseen (decision 24 lets employers keep editing while it waits).
      */
-    public function approve(JobPosting $posting): JobPosting
+    public function decide(JobPosting $posting, string $decision, ?string $reason, string $reviewedUpdatedAt): JobPosting
     {
-        $this->moveTo($posting, PostingStatus::Open);
-        $posting->forceFill(['approved_at' => now(), 'rejection_reason' => null])->save();
+        return DB::transaction(function () use ($posting, $decision, $reason, $reviewedUpdatedAt) {
+            $posting = JobPosting::whereKey($posting->id)->lockForUpdate()->firstOrFail();
 
-        return $posting;
-    }
+            if ($posting->status !== PostingStatus::Pending) {
+                throw ValidationException::withMessages(['decision' => 'This posting is not waiting for approval.']);
+            }
 
-    /**
-     * An admin rejects a waiting posting; the employer sees the reason and can resubmit.
-     */
-    public function reject(JobPosting $posting, string $reason): JobPosting
-    {
-        $this->moveTo($posting, PostingStatus::Rejected);
-        $posting->forceFill(['rejection_reason' => $reason])->save();
+            if ($posting->updated_at?->toIso8601String() !== $reviewedUpdatedAt) {
+                abort(409, 'This posting changed while you were reviewing it. Reload the page to see the latest version.');
+            }
 
-        return $posting;
+            if ($decision === 'approve') {
+                $this->moveTo($posting, PostingStatus::Open);
+                $posting->forceFill(['approved_at' => now(), 'rejection_reason' => null])->save();
+            } else {
+                $this->moveTo($posting, PostingStatus::Rejected);
+                $posting->forceFill(['rejection_reason' => $reason])->save();
+            }
+
+            return $posting;
+        });
     }
 
     /**

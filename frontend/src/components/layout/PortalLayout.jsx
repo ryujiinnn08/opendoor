@@ -55,7 +55,7 @@ export default function PortalLayout() {
               <li key={item.to}>
                 <NavLink
                   to={item.to}
-                  end
+                  end={item.end ?? true}
                   className={({ isActive }) =>
                     `block min-h-11 border-b-4 px-3 py-2 ${isActive ? 'border-primary font-bold text-primary' : 'border-transparent hover:underline'}`
                   }

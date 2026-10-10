@@ -6,6 +6,7 @@ use App\Models\Accommodation;
 use App\Models\JobPosting;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\Concerns\BuildsPostings;
 use Tests\Concerns\BuildsTeams;
@@ -133,7 +134,10 @@ class JobPostingTest extends TestCase
     {
         [$individual, $employer] = $this->individualEmployer();
         $factory = JobPosting::factory()->in($employer);
-        $posting = ($state === 'draft' ? $factory : $factory->{$state}())->create();
+        // Submitted days ago, so a save that wrongly reset it would show.
+        $posting = ($state === 'draft' ? $factory : $factory->{$state}())->create(
+            $state === 'pending' ? ['submitted_at' => now()->subDays(3)] : [],
+        );
         $before = $posting->submitted_at;
 
         $this->actingAs($individual, 'web')
@@ -189,5 +193,19 @@ class JobPostingTest extends TestCase
         $this->actingAs(User::factory()->admin()->create(), 'web')
             ->postJson('/api/employer/job-postings', ['title' => 'X'])
             ->assertForbidden();
+    }
+
+    public function test_a_very_long_accommodation_list_is_refused_without_checking_every_item(): void
+    {
+        [$individual] = $this->individualEmployer();
+        $payload = $this->completePosting([
+            'accommodations' => array_map(fn (int $id) => ['id' => $id, 'note' => null], range(1, 5000)),
+        ]);
+
+        DB::enableQueryLog();
+        $this->actingAs($individual, 'web')->postJson('/api/employer/job-postings', $payload)
+            ->assertJsonValidationErrors(['accommodations' => 'Choose 50 accommodations or fewer.']);
+
+        $this->assertLessThan(20, count(DB::getQueryLog()));
     }
 }

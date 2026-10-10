@@ -39,7 +39,7 @@ export default function Modal({ open, onOpenChange, title, description, children
           onCloseAutoFocus={handleCloseAutoFocus}
           // Without a description, tell Radix not to expect one.
           {...(description ? {} : { 'aria-describedby': undefined })}
-          className="fixed left-1/2 top-1/2 z-50 max-h-[90vh] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-lg border-2 border-border bg-surface p-6 text-text shadow-xl"
+          className="fixed left-1/2 top-1/2 z-50 max-h-[90vh] w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 overflow-y-auto rounded-lg border-2 border-border bg-surface p-6 text-text"
         >
           <Dialog.Title className="text-2xl font-bold">{title}</Dialog.Title>
           {description && <Dialog.Description className="mt-2">{description}</Dialog.Description>}

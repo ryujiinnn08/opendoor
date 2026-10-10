@@ -1,6 +1,6 @@
 # Phase 2 Plan: Employer Side
 
-> Status: **Phase 2A built (2026-10-05)**: demo steps A1–A8 verified in the browser; 91 backend and 51 frontend tests pass. **Phase 2B design approved (2026-10-05)**, being built.
+> Status: **Phase 2 built.** 2A (2026-10-05): demo steps A1–A8 verified in the browser. 2B (2026-10-10): demo steps B1–B7 verified in the browser; 159 backend and 124 frontend tests pass.
 > Part of: [CONCEPT_PLAN.md](CONCEPT_PLAN.md), build phase 2 of 7
 > Builds on: [PHASE_1_PLAN.md](PHASE_1_PLAN.md) (accounts, roles, categories, accommodation types)
 > Rev. 2 (2026-10-05): companies now have **departments** and **several HR accounts** joined by invite link; **individual employers** are allowed. Phase 2 is split into **2A** (employers and teams) and **2B** (job postings and approvals).
@@ -446,4 +446,40 @@ Found and fixed while testing in the browser:
 - **Focus was lost after moving an HR officer** to another department; it now lands on that department's heading.
 - **Filter tabs and the menu both said "current page"**; filters now say "current item".
 - XAMPP's PHP image library can't create WebP files, so the logo test uses PNG/JPG fixtures (real WebP uploads are still accepted).
+
+## Phase 2B build notes (2026-10-10)
+
+Checked before finishing (decision 38): a Superpowers code review, plus GSD's code review, UI audit and security audit (all 8 threats in the threat model are handled). Demo steps B1–B7 were walked through in the browser on a separate copy of the database (`opendoor_verify`), so the `opendoor` demo data stayed as it was.
+
+Found and fixed:
+- **An approval could publish text the admin never saw.** Employers can edit a posting while it waits (decision 24), so Approve and Reject now send the version the admin reviewed. If the posting changed meanwhile, the admin sees "This posting changed while you were reviewing it." An employer save that lands right after an approval sends the posting back for review.
+- **Closing a dialog while its request was running crashed the page** (Job postings, Categories). Dialogs now stay open until the request finishes.
+- **Focus was lost** after Close or Reopen (it now moves to the posting's title) and when the Create or Edit posting form finished loading (it now stays on the page heading).
+- **Switching filters quickly could show the wrong list.** The latest request now wins.
+- **Raw server text** such as "No query results for model…" now reads "We couldn't find that. It may have been deleted."
+- **A long link in a description scrolled the page sideways on phones.** Long words now wrap.
+- **From the visual pass:**
+  - Accommodation checkboxes have a 44 px click area, and the footer and logo links are 44 px tall.
+  - Dashboard counts are ink, because purple is kept for things you can click.
+  - The form's closing date section is now called "When applications close".
+  - A hand-edited `?department=` no longer leaves the list loading forever.
+  - Empty lists name the filtered department.
+  - Dashboards and Posting approvals say when they can't load, with Try again.
+  - A closing date the server refuses is shown on the date field.
+  - Years with five digits are refused.
+- **Limits:** a posting lists at most 50 accommodations, and the admin review marks types that are no longer offered (decision 31).
+
+Left for later:
+- The JavaScript bundle is 540 kB (Vite warns above 500 kB). Loading each page's code separately would fix it.
+- Lists show at most 200 rows and don't say so.
+- On Team, "Create invite link" doesn't name its department for screen readers, and two invites made on the same day get the same "Revoke" name.
+- An HR officer moved to another department sees the old department name until the page reloads.
+- The demo postings find categories and accommodation types by name. Seeding after an admin renamed a category or retired a type could leave a demo posting with no category, or with a retired type.
+- Rare cases:
+  - An accommodation's server error can point at the wrong item if the selection changed after saving.
+  - An unknown status would show as Draft.
+  - The API refuses Close if a closing date is sent with it.
+- The high-contrast theme's red buttons need dark text; the theme can't be switched on yet.
+- Phase 3: the public job page should get a slimmer posting shape than the employer one, which includes the employer's verification status.
+- More automatic accessibility checks on the posting pages, and a few more permission tests (another company saving or changing a status, an admin opening a deleted posting).
 

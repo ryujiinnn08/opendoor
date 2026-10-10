@@ -16,4 +16,16 @@ describe('FilterTabs', () => {
     expect(screen.getByRole('link', { name: 'Waiting' })).not.toHaveAttribute('aria-current')
     expect(screen.getByRole('link', { name: 'Waiting' })).toHaveAttribute('href', '/?status=pending')
   })
+
+  it('keeps the other filters when switching', () => {
+    const items = [
+      { value: 'open', label: 'Open' },
+      { value: 'pending', label: 'Waiting' },
+    ]
+    renderRoutes([{ path: '/list', element: <FilterTabs label="Posting status" items={items} current="open" /> }], {
+      path: '/list?department=4&status=open',
+    })
+
+    expect(screen.getByRole('link', { name: 'Waiting' })).toHaveAttribute('href', '/list?department=4&status=pending')
+  })
 })

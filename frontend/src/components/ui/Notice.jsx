@@ -16,7 +16,7 @@ export default function Notice({ tone = 'info', children, className = '' }) {
       <span aria-hidden="true" className="font-bold">
         {icon}
       </span>
-      <div>{children}</div>
+      <div className="max-w-prose">{children}</div>
     </div>
   )
 }

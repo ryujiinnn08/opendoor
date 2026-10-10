@@ -8,12 +8,12 @@ export default function SiteFooter() {
         <nav aria-label="Footer">
           <ul className="flex flex-wrap gap-4">
             <li>
-              <Link to="/privacy" className="underline underline-offset-4 hover:no-underline">
+              <Link to="/privacy" className="inline-flex min-h-11 items-center underline underline-offset-4 hover:no-underline">
                 Privacy notice
               </Link>
             </li>
             <li>
-              <Link to="/accessibility" className="underline underline-offset-4 hover:no-underline">
+              <Link to="/accessibility" className="inline-flex min-h-11 items-center underline underline-offset-4 hover:no-underline">
                 Accessibility
               </Link>
             </li>

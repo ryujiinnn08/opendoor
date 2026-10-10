@@ -10,13 +10,16 @@ describe('portalFor', () => {
       'Dashboard',
       'Company profile',
       'Team',
+      'Job postings',
     ])
     expect(labels({ role: 'employer', membership: { role: 'hr', employer: company, department: { name: 'IT' } } })).toEqual([
       'Dashboard',
+      'Job postings',
     ])
     expect(labels({ role: 'employer', membership: { role: 'owner', employer: { type: 'individual' } } })).toEqual([
       'Dashboard',
       'My profile',
+      'Job postings',
     ])
     expect(labels({ role: 'employer', membership: null })).toEqual(['Set up your profile'])
   })
@@ -24,5 +27,6 @@ describe('portalFor', () => {
   it('includes the new admin pages', () => {
     expect(labels({ role: 'admin' })).toContain('Employer verification')
     expect(labels({ role: 'admin' })).toContain('Settings')
+    expect(labels({ role: 'admin' })).toContain('Posting approvals')
   })
 })

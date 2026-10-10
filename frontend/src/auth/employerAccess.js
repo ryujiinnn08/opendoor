@@ -18,7 +18,7 @@ export function employerSummary(user) {
     case 'owner':
       return `Owner, ${membership.employer.name}`
     case 'hr':
-      return `HR officer, ${membership.department?.name} · ${membership.employer.name}`
+      return `HR officer in ${membership.department?.name}, ${membership.employer.name}`
     case 'individual':
       return 'Individual employer'
     case 'none':

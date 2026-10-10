@@ -75,7 +75,7 @@ export default function HomePage() {
         <ol className="mt-4 grid gap-4 md:grid-cols-3">
           {STEPS.map((step, index) => (
             <li key={step.title} className="rounded-lg border border-border bg-surface p-5">
-              <p className="font-bold text-accent">Step {index + 1}</p>
+              <p className="font-bold text-primary">Step {index + 1}</p>
               <h3 className="mt-1 text-xl font-bold">{step.title}</h3>
               <p className="mt-2">{step.text}</p>
             </li>

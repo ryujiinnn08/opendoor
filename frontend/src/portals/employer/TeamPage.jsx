@@ -90,7 +90,7 @@ export default function TeamPage() {
         report(`Department "${action.department.name}" deleted.`)
       } else if (action.kind === 'remove-member') {
         await removeMember(action.member.id)
-        report(`${action.member.name} was removed from ${companyName}.`)
+        report(`${action.member.name} is no longer on ${companyName}'s team.`)
       } else if (action.kind === 'revoke-invite') {
         await revokeInvite(action.invite.id)
         setNewInvites((current) => {

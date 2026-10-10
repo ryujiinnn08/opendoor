@@ -3,6 +3,7 @@
 namespace Tests\Feature\Admin;
 
 use App\Models\JobPosting;
+use App\Services\JobPostingWorkflow;
 use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -34,7 +35,7 @@ class PostingApprovalTest extends TestCase
         $posting = JobPosting::factory()->pending()->create();
 
         $this->actingAs(User::factory()->admin()->create(), 'web')
-            ->patchJson("/api/admin/job-postings/{$posting->id}/approve", ['decision' => 'approve'])
+            ->patchJson("/api/admin/job-postings/{$posting->id}/approve", $this->decision($posting, 'approve'))
             ->assertOk()
             ->assertJsonPath('data.status', 'open');
 
@@ -48,9 +49,9 @@ class PostingApprovalTest extends TestCase
         $posting = JobPosting::factory()->in($employer)->pending()->create();
 
         $this->actingAs(User::factory()->admin()->create(), 'web')
-            ->patchJson("/api/admin/job-postings/{$posting->id}/approve", ['decision' => 'reject'])
+            ->patchJson("/api/admin/job-postings/{$posting->id}/approve", $this->decision($posting, 'reject'))
             ->assertJsonValidationErrors(['reason' => 'Give a reason so they know what to fix.']);
-        $this->patchJson("/api/admin/job-postings/{$posting->id}/approve", ['decision' => 'reject', 'reason' => 'Say what the job involves.'])
+        $this->patchJson("/api/admin/job-postings/{$posting->id}/approve", $this->decision($posting, 'reject', 'Say what the job involves.'))
             ->assertOk()
             ->assertJsonPath('data.status', 'rejected');
         $this->getJson('/api/admin/job-postings?status=rejected')->assertJsonPath('data.0.id', $posting->id);
@@ -66,7 +67,7 @@ class PostingApprovalTest extends TestCase
         foreach (['open', 'rejected', 'closed'] as $state) {
             $posting = JobPosting::factory()->{$state}()->create();
 
-            $this->patchJson("/api/admin/job-postings/{$posting->id}/approve", ['decision' => 'approve'])
+            $this->patchJson("/api/admin/job-postings/{$posting->id}/approve", $this->decision($posting, 'approve'))
                 ->assertJsonValidationErrors(['decision' => 'This posting is not waiting for approval.']);
         }
     }
@@ -78,7 +79,7 @@ class PostingApprovalTest extends TestCase
 
         $this->getJson("/api/admin/job-postings/{$draft->id}")->assertNotFound();
         $this->getJson('/api/admin/job-postings?status=draft')->assertUnprocessable();
-        $this->patchJson("/api/admin/job-postings/{$draft->id}/approve", ['decision' => 'approve'])
+        $this->patchJson("/api/admin/job-postings/{$draft->id}/approve", $this->decision($draft, 'approve'))
             ->assertJsonValidationErrors(['decision' => 'This posting is not waiting for approval.']);
     }
 
@@ -102,7 +103,7 @@ class PostingApprovalTest extends TestCase
         ]);
 
         $this->actingAs(User::factory()->admin()->create(), 'web')
-            ->patchJson("/api/admin/job-postings/{$posting->id}/approve", ['decision' => 'approve'])
+            ->patchJson("/api/admin/job-postings/{$posting->id}/approve", $this->decision($posting, 'approve'))
             ->assertOk()
             ->assertJsonPath('data.status', 'closed')
             ->assertJsonPath('data.closed_automatically', true);
@@ -123,8 +124,69 @@ class PostingApprovalTest extends TestCase
         $posting = JobPosting::factory()->in($employer)->pending()->create();
 
         $this->actingAs($individual, 'web')
-            ->patchJson("/api/admin/job-postings/{$posting->id}/approve", ['decision' => 'approve'])
+            ->patchJson("/api/admin/job-postings/{$posting->id}/approve", $this->decision($posting, 'approve'))
             ->assertForbidden();
         $this->assertSame('pending', $posting->fresh()->status->value);
+    }
+
+    public function test_a_decision_on_a_version_the_admin_did_not_see_is_refused(): void
+    {
+        [$individual, $employer] = $this->individualEmployer();
+        $posting = JobPosting::factory()->in($employer)->pending()->create();
+        $reviewed = $this->decision($posting, 'approve');
+
+        $this->travel(2)->minutes();
+        $this->actingAs($individual, 'web')
+            ->putJson("/api/employer/job-postings/{$posting->id}", $this->completePosting(['title' => 'Changed while waiting', 'submit' => false]))
+            ->assertOk();
+
+        $this->actingAs(User::factory()->admin()->create(), 'web')
+            ->patchJson("/api/admin/job-postings/{$posting->id}/approve", $reviewed)
+            ->assertStatus(409)
+            ->assertJsonPath('message', 'This posting changed while you were reviewing it. Reload the page to see the latest version.');
+        $this->assertSame('pending', $posting->fresh()->status->value);
+
+        $this->patchJson("/api/admin/job-postings/{$posting->id}/approve", $this->decision($posting->fresh(), 'approve'))
+            ->assertOk()
+            ->assertJsonPath('data.title', 'Changed while waiting');
+    }
+
+    public function test_a_decision_must_say_which_version_was_reviewed(): void
+    {
+        $posting = JobPosting::factory()->pending()->create();
+
+        $this->actingAs(User::factory()->admin()->create(), 'web')
+            ->patchJson("/api/admin/job-postings/{$posting->id}/approve", ['decision' => 'approve'])
+            ->assertJsonValidationErrors(['updated_at' => 'Reload the page and review the posting again.']);
+        $this->assertSame('pending', $posting->fresh()->status->value);
+    }
+
+    public function test_an_employer_save_that_lands_after_an_approval_goes_back_for_review(): void
+    {
+        [$individual, $employer] = $this->individualEmployer();
+        // The employer's request loaded the posting while it was waiting...
+        $loadedByEmployer = JobPosting::factory()->in($employer)->pending()->create();
+        // ...then an admin approved it before the employer's save ran.
+        JobPosting::whereKey($loadedByEmployer->id)->update(['status' => 'open', 'approved_at' => now()]);
+
+        app(JobPostingWorkflow::class)->update($loadedByEmployer, $individual, ['title' => 'Never reviewed'], null, false);
+
+        $saved = $loadedByEmployer->fresh();
+        $this->assertSame('Never reviewed', $saved->title);
+        $this->assertSame('pending', $saved->status->value);
+    }
+
+    /**
+     * A decision as the review page sends it: with the version the admin was shown.
+     *
+     * @return array<string, string|null>
+     */
+    private function decision(JobPosting $posting, string $decision, ?string $reason = null): array
+    {
+        return array_filter([
+            'decision' => $decision,
+            'reason' => $reason,
+            'updated_at' => $posting->updated_at?->toIso8601String(),
+        ], fn ($value) => $value !== null);
     }
 }

@@ -120,7 +120,11 @@ export default function CategoriesPage() {
       setDeleting(null)
       report(`Category "${category.name}" deleted.`)
     } catch (error) {
-      setDeleting((current) => ({ ...current, busy: false, error: generalErrorFrom(error) }))
+      // A category used by job postings is refused with a message saying to rename it.
+      setDeleting(
+        (current) =>
+          current && { ...current, busy: false, error: fieldErrorsFrom(error).category ?? generalErrorFrom(error) },
+      )
     }
   }
 
@@ -250,9 +254,10 @@ export default function CategoriesPage() {
 
       <ConfirmDialog
         open={Boolean(deleting)}
-        onOpenChange={(open) => !open && setDeleting(null)}
+        // Stays open while deleting, so a refusal can still be shown.
+        onOpenChange={(open) => !open && setDeleting((current) => (current?.busy ? current : null))}
         title={deleting ? `Delete "${deleting.category.name}"?` : ''}
-        description="Job postings will no longer be able to use this category. This cannot be undone."
+        description="Categories that job postings use can't be deleted; rename them instead. Deleting can't be undone."
         confirmLabel="Delete category"
         onConfirm={handleDelete}
         busy={deleting?.busy}

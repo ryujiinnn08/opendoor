@@ -12,7 +12,7 @@ export default function PageHeading({ children, title, className = '' }) {
   }, [documentTitle])
 
   return (
-    <h1 tabIndex={-1} className={`text-3xl font-bold sm:text-4xl ${className}`}>
+    <h1 tabIndex={-1} className={`text-title font-bold tracking-tight sm:text-title-lg ${className}`}>
       {children}
     </h1>
   )

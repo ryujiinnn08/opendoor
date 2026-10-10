@@ -2,7 +2,7 @@
 
 A web-based job matching platform with accommodation-based filtering and post-hire accommodation verification for persons with disabilities.
 
-See [docs/CONCEPT_PLAN.md](docs/CONCEPT_PLAN.md) for the concept, architecture and build plan. Phase plans: [Phase 1](docs/PHASE_1_PLAN.md) (accounts and shared lists, done), [Phase 2](docs/PHASE_2_PLAN.md) (employers, teams and job postings; 2A done).
+See [docs/CONCEPT_PLAN.md](docs/CONCEPT_PLAN.md) for the concept, architecture and build plan. Phase plans: [Phase 1](docs/PHASE_1_PLAN.md) (accounts and shared lists, done), [Phase 2](docs/PHASE_2_PLAN.md) (employers, teams and job postings, done).
 
 ## Structure
 
@@ -36,7 +36,7 @@ php artisan migrate --seed
 php artisan serve --host=localhost --port=8000
 ```
 
-`--seed` loads the job categories, the accommodation types and the starting accounts. It is safe to run `php artisan db:seed` again later; nothing is duplicated and no password is reset.
+`--seed` loads the job categories, the accommodation types, the starting accounts, the demo company and five sample job postings. It is safe to run `php artisan db:seed` again later; nothing is duplicated and no password is reset.
 
 Frontend (http://localhost:5173):
 
@@ -54,11 +54,13 @@ When the `SEED_*` settings in `backend/.env` are left blank, the seeder creates 
 
 | Role | Email | Password | What it shows |
 |---|---|---|---|
-| Administrator | `admin@opendoor.test` | `Admin_1234` | Verification queue, settings, shared lists |
+| Administrator | `admin@opendoor.test` | `Admin_1234` | Employer verification, posting approvals, settings, shared lists |
 | Job seeker | `candidate@opendoor.test` | `Demo_1234` | Candidate portal |
-| Company owner | `employer@opendoor.test` | `Demo_1234` | Owner of the verified **OpenDoor Demo Corp.** (departments Human Resources and IT) |
-| HR officer | `hr@opendoor.test` | `Demo_1234` | HR officer in OpenDoor Demo Corp.'s Human Resources department |
-| Individual employer | `individual@opendoor.test` | `Demo_1234` | Employer hiring for themselves (no departments) |
+| Company owner | `employer@opendoor.test` | `Demo_1234` | Owner of the verified **OpenDoor Demo Corp.** (departments Human Resources and IT); sees and manages every department's job postings |
+| HR officer | `hr@opendoor.test` | `Demo_1234` | HR officer in OpenDoor Demo Corp.'s Human Resources department; sees only that department's job postings |
+| Individual employer | `individual@opendoor.test` | `Demo_1234` | Employer hiring for themselves (no departments), with one open job posting |
+
+The five sample job postings: *HR Assistant* (open) and *Recruitment Coordinator* (waiting for approval) in Human Resources, *Junior Web Developer* (open) and *IT Support Specialist* (draft) in IT, and the individual employer's *Part-time Home-based Bookkeeper* (open). They are added only for employers that have no postings yet.
 
 These defaults exist only outside production. On the live site the admin email and password must be set in the server's environment, and demo accounts are created only when `SEED_DEMO_PASSWORD` is set (see [docs/PHASE_1_PLAN.md §3.1](docs/PHASE_1_PLAN.md)). Running `php artisan db:seed` again never changes an account that already exists.
 

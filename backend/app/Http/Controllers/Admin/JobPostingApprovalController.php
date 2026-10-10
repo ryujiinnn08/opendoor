@@ -11,7 +11,6 @@ use App\Services\JobPostingWorkflow;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Validation\Rule;
-use Illuminate\Validation\ValidationException;
 
 class JobPostingApprovalController extends Controller
 {
@@ -48,15 +47,18 @@ class JobPostingApprovalController extends Controller
         return new JobPostingResource($posting->load(JobPostingResource::RELATIONS));
     }
 
+    /**
+     * Approve or reject (with a reason) the version the admin reviewed: the page sends back the
+     * posting's `updated_at`, and a posting changed since then is refused with 409.
+     */
     public function update(DecisionRequest $request, JobPosting $posting, JobPostingWorkflow $workflow): JobPostingResource
     {
-        if ($posting->status !== PostingStatus::Pending) {
-            throw ValidationException::withMessages(['decision' => 'This posting is not waiting for approval.']);
-        }
+        $reviewed = $request->validate(
+            ['updated_at' => ['required', 'string']],
+            ['updated_at.required' => 'Reload the page and review the posting again.'],
+        )['updated_at'];
 
-        $posting = $request->validated('decision') === 'approve'
-            ? $workflow->approve($posting)
-            : $workflow->reject($posting, $request->validated('reason'));
+        $posting = $workflow->decide($posting, $request->validated('decision'), $request->validated('reason'), $reviewed);
 
         return new JobPostingResource($posting->load(JobPostingResource::RELATIONS));
     }

@@ -9,11 +9,16 @@ import AccommodationsPage from './portals/admin/AccommodationsPage.jsx'
 import AdminDashboard from './portals/admin/AdminDashboard.jsx'
 import CategoriesPage from './portals/admin/CategoriesPage.jsx'
 import EmployerVerificationPage from './portals/admin/EmployerVerificationPage.jsx'
+import PostingApprovalsPage from './portals/admin/PostingApprovalsPage.jsx'
+import PostingReviewPage from './portals/admin/PostingReviewPage.jsx'
 import SettingsPage from './portals/admin/SettingsPage.jsx'
 import CandidateDashboard from './portals/candidate/CandidateDashboard.jsx'
 import CompanyPage from './portals/employer/CompanyPage.jsx'
 import EmployerDashboard from './portals/employer/EmployerDashboard.jsx'
 import IndividualProfilePage from './portals/employer/IndividualProfilePage.jsx'
+import JobPostingFormPage from './portals/employer/JobPostingFormPage.jsx'
+import JobPostingPreviewPage from './portals/employer/JobPostingPreviewPage.jsx'
+import JobPostingsPage from './portals/employer/JobPostingsPage.jsx'
 import SetupPage from './portals/employer/SetupPage.jsx'
 import TeamPage from './portals/employer/TeamPage.jsx'
 import AccessibilityPage from './portals/public/AccessibilityPage.jsx'
@@ -60,7 +65,13 @@ export const routes = [
         { element: <RequireNoEmployerProfile />, children: [{ path: '/employer/setup', element: <SetupPage /> }] },
         {
           element: <RequireEmployerProfile kinds={['owner', 'hr', 'individual']} />,
-          children: [{ path: '/employer/dashboard', element: <EmployerDashboard /> }],
+          children: [
+            { path: '/employer/dashboard', element: <EmployerDashboard /> },
+            { path: '/employer/job-postings', element: <JobPostingsPage /> },
+            { path: '/employer/job-postings/new', element: <JobPostingFormPage /> },
+            { path: '/employer/job-postings/:id', element: <JobPostingPreviewPage /> },
+            { path: '/employer/job-postings/:id/edit', element: <JobPostingFormPage /> },
+          ],
         },
         {
           element: <RequireEmployerProfile kinds={['owner']} />,
@@ -79,6 +90,8 @@ export const routes = [
         { path: '/admin/categories', element: <CategoriesPage /> },
         { path: '/admin/accommodations', element: <AccommodationsPage /> },
         { path: '/admin/employers', element: <EmployerVerificationPage /> },
+        { path: '/admin/job-postings', element: <PostingApprovalsPage /> },
+        { path: '/admin/job-postings/:id', element: <PostingReviewPage /> },
         { path: '/admin/settings', element: <SettingsPage /> },
       ]),
     ],

@@ -1,5 +1,11 @@
 import client from './client.js'
 
+/** Posting counts by status: { postings: { draft, pending, open, rejected, closed } }. */
+export async function getEmployerDashboard() {
+  const { data } = await client.get('/api/employer/dashboard')
+  return data.data
+}
+
 export async function setupEmployer(values) {
   const { data } = await client.post('/api/employer/setup', values)
   return data.data

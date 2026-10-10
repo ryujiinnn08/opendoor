@@ -22,6 +22,9 @@ use Illuminate\Validation\Validator;
  */
 class JobPostingRequest extends FormRequest
 {
+    /** More than the whole list of accommodation types; stops oversized requests early. */
+    private const MAX_ACCOMMODATIONS = 50;
+
     private const FIELDS = [
         'title', 'department_id', 'category_id', 'description', 'location',
         'employment_type', 'work_setup', 'interview_format', 'closes_on',
@@ -60,11 +63,17 @@ class JobPostingRequest extends FormRequest
             'work_setup' => [$required, Rule::in(array_column(WorkSetup::cases(), 'value'))],
             'interview_format' => [$required, Rule::in(array_column(InterviewFormat::cases(), 'value'))],
             'closes_on' => $this->submitting() ? ['required', new ClosingDate] : ['nullable', 'date_format:Y-m-d'],
-            'accommodations' => [$required, 'array', $this->submitting() ? 'min:1' : 'min:0'],
-            'accommodations.*.id' => ['required', 'integer', 'distinct', 'exists:accommodations,id'],
-            'accommodations.*.note' => ['nullable', 'string', 'max:255'],
+            'accommodations' => [
+                $required, 'array', $this->submitting() ? 'min:1' : 'min:0', 'max:'.self::MAX_ACCOMMODATIONS,
+            ],
             'submit' => ['sometimes', 'boolean'],
         ];
+
+        // Each item costs a query, so an oversized list is refused without checking its items.
+        if (! $this->tooManyAccommodations()) {
+            $rules['accommodations.*.id'] = ['required', 'integer', 'distinct', 'exists:accommodations,id'];
+            $rules['accommodations.*.note'] = ['nullable', 'string', 'max:255'];
+        }
 
         // Only company owners choose; HR officers and individual employers never send one that counts.
         if ($member->isOwner() && $member->employer->isCompany()) {
@@ -88,7 +97,7 @@ class JobPostingRequest extends FormRequest
         return [
             function (Validator $validator) {
                 $items = $this->input('accommodations');
-                if (! is_array($items)) {
+                if (! is_array($items) || $this->tooManyAccommodations()) {
                     return;
                 }
 
@@ -144,6 +153,7 @@ class JobPostingRequest extends FormRequest
             'accommodations.required' => $accommodations,
             'accommodations.array' => $accommodations,
             'accommodations.min' => $accommodations,
+            'accommodations.max' => 'Choose '.self::MAX_ACCOMMODATIONS.' accommodations or fewer.',
             'accommodations.*.id.required' => $fromList,
             'accommodations.*.id.integer' => $fromList,
             'accommodations.*.id.exists' => $fromList,
@@ -181,6 +191,13 @@ class JobPostingRequest extends FormRequest
 
             return ['id' => (int) $item['id'], 'note' => $note === '' ? null : $note];
         })->values()->all();
+    }
+
+    private function tooManyAccommodations(): bool
+    {
+        $items = $this->input('accommodations');
+
+        return is_array($items) && count($items) > self::MAX_ACCOMMODATIONS;
     }
 
     private function posting(): ?JobPosting

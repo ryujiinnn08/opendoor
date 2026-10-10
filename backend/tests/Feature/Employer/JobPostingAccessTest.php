@@ -133,4 +133,13 @@ class JobPostingAccessTest extends TestCase
             ->assertJsonPath('data.postings.pending', 0)
             ->assertJsonPath('data.postings.closed', 1);
     }
+
+    public function test_missing_postings_get_a_plain_message(): void
+    {
+        [$individual] = $this->individualEmployer();
+
+        $this->actingAs($individual, 'web')->getJson('/api/employer/job-postings/999')
+            ->assertNotFound()
+            ->assertJsonPath('message', "We couldn't find that. It may have been deleted.");
+    }
 }

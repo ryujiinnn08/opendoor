@@ -1,23 +1,44 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { getAdminDashboard } from '../../api/admin.js'
 import { useAuth } from '../../auth/authContext.js'
+import Button from '../../components/ui/Button.jsx'
 import DashboardTile from '../../components/ui/DashboardTile.jsx'
-import PageHeading from '../../components/ui/PageHeading.jsx'
+import Notice from '../../components/ui/Notice.jsx'
+import PageHeader from '../../components/ui/PageHeader.jsx'
 
 export default function AdminDashboard() {
   const { user } = useAuth()
   const [counts, setCounts] = useState(null)
+  const [failed, setFailed] = useState(false)
+
+  const load = useCallback(() => {
+    getAdminDashboard()
+      .then((data) => {
+        setCounts(data)
+        setFailed(false)
+      })
+      .catch(() => setFailed(true))
+  }, [])
 
   useEffect(() => {
-    getAdminDashboard()
-      .then(setCounts)
-      .catch(() => setCounts(null))
-  }, [])
+    load()
+  }, [load])
 
   return (
     <>
-      <PageHeading title="Admin dashboard">Welcome, {user.name}</PageHeading>
-      <p className="mt-4 max-w-prose">Keep OpenDoor trustworthy and its shared lists up to date.</p>
+      <PageHeader
+        title={`Welcome, ${user.name}`}
+        documentTitle="Admin dashboard"
+        intro="Keep OpenDoor trustworthy and its shared lists up to date."
+      />
+      {failed && (
+        <Notice tone="error" className="mt-6">
+          <p>We couldn't load the numbers on this page.</p>
+          <Button variant="link" onClick={load}>
+            Try again
+          </Button>
+        </Notice>
+      )}
       <ul className="mt-8 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         <DashboardTile
           title="Employer verification"
@@ -27,8 +48,13 @@ export default function AdminDashboard() {
         >
           Companies waiting for their registration number to be checked.
         </DashboardTile>
-        <DashboardTile title="Posting approvals" comingSoon>
-          Approve job postings before they go live.
+        <DashboardTile
+          title="Posting approvals"
+          count={counts?.postings_waiting_for_approval ?? '–'}
+          to="/admin/job-postings"
+          linkLabel="Review postings"
+        >
+          Job postings waiting for approval before job seekers can see them.
         </DashboardTile>
         <DashboardTile title="Categories" count={counts?.categories ?? '–'} to="/admin/categories" linkLabel="Manage categories">
           Job categories used for browsing and filtering.
