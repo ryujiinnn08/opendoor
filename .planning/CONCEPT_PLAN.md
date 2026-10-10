@@ -141,7 +141,7 @@ OpenDoor/
 │       ├── portals/{public,candidate,employer,admin}/   pages per portal
 │       ├── hooks/           useDebounce, useQueryParams, useAnnounce
 │       └── styles/          tokens, themes
-└── docs/                    this plan, ERD, API reference, test reports
+└── .planning/               this plan, phase plans, implementation plans (GSD planning folder; was docs/ until 2026-10-10)
 ```
 
 ### 5.3 Security model (three gates on every request)

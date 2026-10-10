@@ -1,0 +1,18 @@
+# Input for /gsd-ingest-docs: the plans GSD turns into PROJECT, REQUIREMENTS, ROADMAP and STATE.
+# Paths are relative to the repository root. Lower precedence wins a conflict:
+# newer phase plans refine the concept plan, and the 2B implementation plan is supporting detail.
+docs:
+  - path: .planning/PHASE_2_PLAN.md
+    type: SPEC
+    precedence: 0
+  - path: .planning/PHASE_1_PLAN.md
+    type: SPEC
+    precedence: 1
+  - path: .planning/CONCEPT_PLAN.md
+    type: PRD
+    precedence: 2
+  - path: .planning/superpowers/plans/2026-10-05-phase-2b-job-postings.md
+    type: DOC
+    precedence: 3
+# Not listed on purpose: .planning/PHASE_3_PLAN.md is a draft with open questions.
+# Add it (type SPEC, precedence 0) once it is approved.

@@ -2,7 +2,7 @@
 
 A web-based job matching platform with accommodation-based filtering and post-hire accommodation verification for persons with disabilities.
 
-See [docs/CONCEPT_PLAN.md](docs/CONCEPT_PLAN.md) for the concept, architecture and build plan. Phase plans: [Phase 1](docs/PHASE_1_PLAN.md) (accounts and shared lists, done), [Phase 2](docs/PHASE_2_PLAN.md) (employers, teams and job postings, done).
+See [.planning/CONCEPT_PLAN.md](.planning/CONCEPT_PLAN.md) for the concept, architecture and build plan. Phase plans: [Phase 1](.planning/PHASE_1_PLAN.md) (accounts and shared lists, done), [Phase 2](.planning/PHASE_2_PLAN.md) (employers, teams and job postings, done), [Phase 3](.planning/PHASE_3_PLAN.md) (candidate side, draft waiting for decisions).
 
 ## Structure
 
@@ -10,7 +10,7 @@ See [docs/CONCEPT_PLAN.md](docs/CONCEPT_PLAN.md) for the concept, architecture a
 OpenDoor/
 ├── backend/    Laravel 12 REST API (Sanctum SPA cookie auth, MySQL/MariaDB)
 ├── frontend/   React 19 + Vite SPA (React Router, Axios, Tailwind CSS), deployed to Cloudflare Workers
-└── docs/       Planning and project documentation
+└── .planning/  Planning documents: concept, phase plans, implementation plans (also GSD's planning folder)
 ```
 
 ## Requirements
@@ -62,7 +62,7 @@ When the `SEED_*` settings in `backend/.env` are left blank, the seeder creates 
 
 The five sample job postings: *HR Assistant* (open) and *Recruitment Coordinator* (waiting for approval) in Human Resources, *Junior Web Developer* (open) and *IT Support Specialist* (draft) in IT, and the individual employer's *Part-time Home-based Bookkeeper* (open). They are added only for employers that have no postings yet.
 
-These defaults exist only outside production. On the live site the admin email and password must be set in the server's environment, and demo accounts are created only when `SEED_DEMO_PASSWORD` is set (see [docs/PHASE_1_PLAN.md §3.1](docs/PHASE_1_PLAN.md)). Running `php artisan db:seed` again never changes an account that already exists.
+These defaults exist only outside production. On the live site the admin email and password must be set in the server's environment, and demo accounts are created only when `SEED_DEMO_PASSWORD` is set (see [.planning/PHASE_1_PLAN.md §3.1](.planning/PHASE_1_PLAN.md)). Running `php artisan db:seed` again never changes an account that already exists.
 
 ## Changing the OpenDoor logo
 
@@ -91,4 +91,4 @@ Backend tests use a temporary in-memory SQLite database, so they never touch you
 - Frontend: Cloudflare Workers static assets (`frontend/wrangler.jsonc`), built from GitHub with `VITE_API_URL=https://api.<domain>`.
 - Backend + MySQL: Railway, served at `api.<domain>` through Cloudflare (SSL mode Full (strict)).
 
-Details: [docs/CONCEPT_PLAN.md §5.6](docs/CONCEPT_PLAN.md).
+Details: [.planning/CONCEPT_PLAN.md §5.6](.planning/CONCEPT_PLAN.md).
